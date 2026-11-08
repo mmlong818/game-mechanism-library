@@ -1,0 +1,52 @@
+name: 机制百科社区投稿
+about: 提交一条新的机制分析与原创设计案例
+labels: ["submission"]
+title: "机制投稿："
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交内容会公开显示在 GitHub Issue 中，并记录公开的 GitHub 账号。请勿填写个人联系方式或其他敏感信息。投稿需要 GitHub 登录，审核通过并添加 `approved-for-catalog` 标签、关闭 Issue 后才会进入社区目录。
+  - type: input
+    id: title
+    attributes:
+      label: 机制名称
+      description: 使用清楚、简短的标题，不需要填写原游戏名称。
+      placeholder: 例如：有限库存推动路线取舍
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: 机制介绍
+      description: 说明玩家面对什么规则、条件如何影响行动，以及结果如何反馈。
+      placeholder: 写清完整的机制逻辑与可迁移的设计意义。
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: 原创案例
+      description: 请提供一个可理解的假设场景，说明玩家选择与具体反馈；不要声称原创参数是某款游戏的事实。
+    validations:
+      required: true
+  - type: textarea
+    id: supporting
+    attributes:
+      label: 配合要素（可选）
+      description: 可补充会改变机制运作的规则、资源或系统条件。
+  - type: input
+    id: tags
+    attributes:
+      label: 标签（可选）
+      description: 用逗号分隔，最多 12 个。
+      placeholder: 选择, 资源, 风险
+  - type: dropdown
+    id: type
+    attributes:
+      label: 条目类型
+      options:
+        - 机制
+        - 系统机制
+    validations:
+      required: true
