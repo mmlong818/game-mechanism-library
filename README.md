@@ -21,7 +21,7 @@ node scripts/import-approved-issues.mjs --input approved-issues.json --dry-run
 node scripts/import-approved-issues.mjs --input approved-issues.json
 ```
 
-The importer accepts only closed, approved issues, rejects malformed or duplicate IDs, and writes a separate ignored `community-approved.json`. The next Pages build emits those cards into community-only chunks and the search index. It never changes the 4,982 source cards or the public archive/deleted indexes. The previous Sites D1 submission database is not migrated or deleted by this repository.
+The importer accepts only closed, approved issues and rejects malformed or duplicate IDs. It adds approved cards to the tracked `community-approved.json`; review the resulting diff before committing it. The next Pages build emits those cards into community-only chunks and the search index. It never changes the 4,982 source cards or the public archive/deleted indexes. The previous Sites D1 submission database is not migrated or deleted by this repository.
 
 ## Privacy boundary
 
