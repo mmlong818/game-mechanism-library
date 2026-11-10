@@ -20,3 +20,70 @@
 .catalogMeta,.sectionTitle>a,.sectionTitle>span,.heroCopy p,.heroFoot,.topics small,.rowContent em,.pagination,.searchShortcut{color:#5f6d70}.carouselControls{gap:5px}.carouselControls button{min-width:32px;min-height:32px;display:grid;place-items:center}@media(max-width:800px){.carouselControls button{min-width:32px;min-height:32px;padding:0}}
 
 .searchIcon{display:none}@media(max-width:800px){.topbar .searchShortcut{font-size:0}.searchShortcut .searchIcon{display:inline;font-size:20px;line-height:1}.searchShortcut .searchLabel{display:none}}
+
+/* UX review pass: catalog-first archive and legible rule/example hierarchy. */
+.libraryHome .introLine{margin-top:18px;margin-bottom:12px}
+.libraryHome .catalog{padding-top:30px;padding-bottom:38px}
+.libraryHome .catalog .sectionTitle{margin-bottom:16px}
+.libraryHome .catalog .sectionTitle h2{font-size:24px}
+.libraryHome .searchbox{height:52px}
+.libraryHome .catalogMeta{margin-top:11px}
+.libraryHome .resultRow{padding-top:12px;padding-bottom:12px}
+.detailPage{max-width:900px;margin:30px auto;padding:0 24px}
+.detailPage>.reader{padding:48px clamp(26px,6vw,72px)}
+.readerPage>.kicker{display:block;margin-bottom:9px}
+.readerPage .readerBack{margin-bottom:17px}
+.readerPage h1{max-width:22ch;font-size:clamp(29px,3.4vw,38px);line-height:1.2;letter-spacing:-.7px;margin:8px 0 28px}
+.readerPage section>h2{font-size:16px;line-height:1.4;margin:0 0 13px;color:var(--deep)}
+.readerPage .readerSummary{max-width:68ch;font-size:17px;line-height:1.82;color:#3c4b4c}
+.readerPage .readerExampleSection{padding-left:20px;border-left:2px solid var(--accent);background:linear-gradient(90deg,#f3f7f6 0%,#fff 72%)}
+.readerPage .readerExampleSection .exampleLabel{display:block;margin-bottom:8px;font-size:10px}
+.readerPage .readerExampleSection>h2{font-size:22px;line-height:1.35;margin:0 0 13px;letter-spacing:-.3px}
+.readerPage .readerExample{max-width:64ch;font-size:15.5px;line-height:1.9;color:#566566}
+.detailActions{right:22px;top:25px}
+@media(max-width:800px){
+  .topbar{row-gap:4px;padding:8px 16px 0;min-height:88px}
+  .topbar nav{gap:17px}
+  .topbar nav a{height:36px}
+  .libraryHome .introLine{margin:9px 16px 11px;padding:0;gap:8px;font-size:10.5px;line-height:1.4}
+  .libraryHome .introLine span:first-child{max-width:58%}
+  .libraryHome .introLine span:last-child{text-align:right;white-space:normal;flex:1 1 auto}
+  .libraryHome .catalog{padding:26px 16px 34px}
+  .libraryHome .catalog .sectionTitle{margin-bottom:13px;gap:8px}
+  .libraryHome .catalog .sectionTitle h2{font-size:20px}
+  .libraryHome .catalog .sectionTitle .kicker{font-size:9px}
+  .libraryHome .catalogControls{gap:5px}
+  .libraryHome .catalogControls>span{display:none}
+  .libraryHome .favoriteFilter{font-size:11px;padding:6px 8px;min-height:36px;min-width:0}
+  .libraryHome .searchbox{height:48px;padding:0 12px;gap:9px}
+  .libraryHome .searchbox input{font-size:13px}
+  .libraryHome .searchbox kbd{display:none}
+  .libraryHome .catalogMeta{margin-top:9px;font-size:10.5px}
+  .libraryHome .resultRow{padding-top:11px;padding-bottom:11px}
+  .libraryHome .rowContent{gap:5px}
+  .libraryHome .rowContent small{font-size:9px}
+  .libraryHome .rowContent b{font-size:14px;line-height:1.35}
+  .libraryHome .rowContent em{-webkit-line-clamp:3;font-size:11.5px;line-height:1.5}
+  .detailPage{max-width:none;margin:0;padding:0}
+  .detailPage>.reader{padding:27px 21px 36px;border-left:0;border-right:0}
+  .readerPage .readerBack{display:block;width:max-content;margin-bottom:18px;font-size:12px}
+  .readerPage>.kicker{font-size:9px;margin-bottom:7px}
+  .readerPage h1{font-size:27px;line-height:1.22;margin:8px 38px 22px 0}
+  .detailActions{right:13px;top:12px}
+  .detailActions .favoriteButton{font-size:22px}
+  .readerPage section{padding:18px 0}
+  .readerPage .readerSummary{font-size:16px;line-height:1.78}
+  .readerPage .readerExampleSection{padding:16px 13px 15px;border-left:2px solid var(--accent);background:linear-gradient(90deg,#f3f7f6 0%,#fff 100%)}
+  .readerPage .readerExampleSection>h2{font-size:20px;margin-bottom:10px}
+  .readerPage .readerExample{font-size:14.5px;line-height:1.82}
+}
+.libraryHome{line-height:1.55}
+.libraryHome .catalog .sectionTitle{align-items:flex-end}
+.libraryHome .catalogControls{align-self:flex-end}
+.libraryHome .searchbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px #146b6814}
+.libraryHome .resultRow{transition:background-color .16s ease}
+.libraryHome .resultRow:hover{background:#eaf1ef}
+.libraryHome .rowOpen:hover b{color:var(--accent)}
+.libraryHome .topbar nav a:hover{color:var(--accent)}
+.readerStructureText{max-width:68ch;margin:0;color:#4e5d5e;font-size:16px;line-height:1.82;white-space:pre-wrap}
+@media(max-width:800px){.libraryHome .rowContent em{-webkit-line-clamp:4}.libraryHome .catalog .sectionTitle{align-items:flex-end}.readerStructureText{font-size:15px;line-height:1.78}}

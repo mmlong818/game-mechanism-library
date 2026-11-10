@@ -3,7 +3,7 @@ export type V2Card = {
   title: string;
   type: "mechanic" | "system";
   summary: string;
-  structure?: string[];
+  structure?: string[] | string;
   example: null | { kind: "design_example"; title: string; narrative: string; parameters?: Record<string, unknown> };
   tags: string[];
   relations?: { kind: string; id: string; note?: string }[];
@@ -36,12 +36,11 @@ export function MechanismReader({ card, page = false, community = false }: { car
   const v2 = isV2(card);
   return <article className={page ? "reader readerPage" : "reader"}>
     {page && <a className="readerBack" href={`${import.meta.env.BASE_URL}#catalog`}>← 返回机制百科</a>}
-    <span className="kicker">{community ? "社区投稿　/　已审核" : v2 ? `${card.type === "system" ? "系统机制" : "机制卡"}　/　完整条目` : "机制卡　/　完整条目"}</span>
     <h1>{card.title}</h1>
     {v2 ? <>
       <section><h2>机制规则</h2><p className="readerSummary">{card.summary}</p></section>
-      {card.structure?.length ? <section><h2>规则结构</h2><ul className="readerStructure">{card.structure.map((item, i) => <li key={`${i}-${item}`}>{item}</li>)}</ul></section> : null}
-      {card.example && <section><h2>设计示例　/　{card.example.title}</h2><p className="readerExample">{card.example.narrative}</p>{card.example.parameters && Object.keys(card.example.parameters).length > 0 && <dl className="readerParameters">{Object.entries(card.example.parameters).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{displayText(value)}</dd></div>)}</dl>}</section>}
+      {card.structure?.length ? <section><h2>规则结构</h2>{Array.isArray(card.structure) ? <ul className="readerStructure">{card.structure.map((item, i) => <li key={`${i}-${item}`}>{item}</li>)}</ul> : <p className="readerStructureText">{card.structure}</p>}</section> : null}
+      {card.example && <section className="readerExampleSection"><span className="kicker exampleLabel">原创设计示例</span><h2>{card.example.title}</h2><p className="readerExample">{card.example.narrative}</p>{card.example.parameters && Object.keys(card.example.parameters).length > 0 && <dl className="readerParameters">{Object.entries(card.example.parameters).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{displayText(value)}</dd></div>)}</dl>}</section>}
       {card.tags.length > 0 && <div className="readerTags" aria-label="标签">{card.tags.map(tag => <span key={tag}>{tag}</span>)}</div>}
       {community && card.communitySource && <p className="communitySource"><a href={card.communitySource.issue_url} target="_blank" rel="noreferrer">查看已审核的原始 GitHub Issue ↗</a></p>}
     </> : <>
