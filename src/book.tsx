@@ -88,8 +88,8 @@ function render(source: string): { html: string; sections: Section[] } {
   return { html, sections };
 }
 
-// 左栏：书名、简介和全书目录。宽屏固定在视口内、栏内滚动；窄屏收成正文上方的“目录”按钮。
-function Contents({ book, chapters, current }: { book?: Group; chapters: Shell[]; current: string }) {
+// 左栏：全书目录（书名在顶栏里，这里不重复）。宽屏固定在视口内、栏内滚动；窄屏收成正文上方的“目录”按钮。
+function Contents({ chapters, current }: { chapters: Shell[]; current: string }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -121,13 +121,6 @@ function Contents({ book, chapters, current }: { book?: Group; chapters: Shell[]
         <i aria-hidden="true">{open ? "收起" : "展开"}</i>
       </button>
       <div className="contents-body">
-        {book && (
-          <div className="contents-book">
-            <b>{book.name}</b>
-            {book.author && <i>{book.author} 著</i>}
-            {book.description && <p>{book.description}</p>}
-          </div>
-        )}
         {list(chapters.filter((e) => !isAppendix(e)))}
         {appendix.length > 0 && (
           <>
@@ -146,10 +139,12 @@ function Sections({ sections }: { sections: Section[] }) {
   const box = useRef<HTMLElement>(null);
   useEffect(() => {
     const spy = () => {
+      // 标题过了顶栏下沿一点就算进入这一节。
+      const line = (document.querySelector<HTMLElement>(".top")?.offsetHeight ?? 64) + 32;
       let now = "";
       for (const s of sections) {
         const el = document.getElementById(s.id);
-        if (el && el.getBoundingClientRect().top <= 96) now = s.id;
+        if (el && el.getBoundingClientRect().top <= line) now = s.id;
       }
       setActive(now);
     };
@@ -209,7 +204,7 @@ export function ChapterPage({ core, id }: { core: Core; id: string }) {
 
   return (
     <div className="reading">
-      <Contents book={core.books.find((b) => b.id === shell.group)} chapters={same} current={id} />
+      <Contents chapters={same} current={id} />
       <article className="read">
         <h1>{shell.name}</h1>
         {page ? (

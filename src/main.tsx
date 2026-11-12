@@ -10,6 +10,7 @@ import { goHome, href, replaceHash, useRoute, type Route } from "./router";
 import { Status } from "./ui";
 
 // 导航：站名、三个卡片库、书、接入 AI、搜索框。当前所在的库高亮。
+// 库里只有一本书时，书这一项直接显示书名；有多本时显示“书”，进书单。
 function Header({ route, core }: { route: Route; core?: Core }) {
   const input = useRef<HTMLInputElement>(null);
   const searchQ = route.name === "search" ? route.q : null;
@@ -28,7 +29,19 @@ function Header({ route, core }: { route: Route; core?: Core }) {
     if (searchQ !== null) replaceHash(target);
     else if (value.trim()) location.hash = target;
   };
+  // 顶栏固定在视口顶部。把它的实际高度写进 --top，固定在视口内的侧栏和标题的停靠位置据此让出空间。
+  const bar = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = bar.current;
+    if (!el) return;
+    const set = () => document.documentElement.style.setProperty("--top", `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   return (
+    <div className="top" ref={bar}>
     <header className="in nav">
       <a className="logo" href="#/">
         <i aria-hidden="true">
@@ -47,7 +60,7 @@ function Header({ route, core }: { route: Route; core?: Core }) {
         ))}
         {core && core.books.length > 0 && (
           <a href={href.book()} aria-current={current(route.name === "book" || route.name === "chapter")}>
-            {BOOK_NAME}
+            {core.books.length === 1 ? core.books[0].name : BOOK_NAME}
           </a>
         )}
         <a href={href.mcp} aria-current={current(route.name === "mcp")}>
@@ -65,6 +78,7 @@ function Header({ route, core }: { route: Route; core?: Core }) {
         <input ref={input} type="search" placeholder="搜卡片和书" aria-label="搜索卡片和书" onChange={(e) => type(e.target.value)} />
       </form>
     </header>
+    </div>
   );
 }
 

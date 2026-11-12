@@ -16,6 +16,7 @@
   --c-cobalt-ink: #ffffff;
   --head: "DM Sans", "Noto Sans SC", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   --sans: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Segoe UI", sans-serif;
+  --top: 64px; /* 顶栏高度，页面加载后由脚本按实际高度更新 */
   --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
   color-scheme: light;
 }
@@ -139,7 +140,15 @@ pre {
   top: 8px;
 }
 
-/* 导航 */
+/* 顶栏：固定在视口顶部，背景不透明，下面一条细线 */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--canvas);
+  border-bottom: 1px solid var(--edge);
+}
 .nav {
   display: flex;
   flex-wrap: wrap;
@@ -176,6 +185,8 @@ pre {
   color: var(--ink-2);
 }
 .nav nav a {
+  flex: none;
+  white-space: nowrap;
   padding: 4px 0;
   border-bottom: 2px solid transparent;
 }
@@ -458,7 +469,7 @@ pre {
 }
 .lsec {
   padding-top: 36px;
-  scroll-margin-top: 8px;
+  scroll-margin-top: calc(var(--top) + 12px);
 }
 .lsec h2 {
   font-size: 22px;
@@ -539,7 +550,7 @@ pre {
   gap: 20px;
   padding: 18px 28px;
   border-top: 1px solid var(--edge);
-  scroll-margin-top: 8px;
+  scroll-margin-top: calc(var(--top) + 12px);
 }
 .row .label {
   font-family: var(--sans);
@@ -744,12 +755,12 @@ pre {
 }
 .toc {
   position: sticky;
-  top: 16px;
+  top: calc(var(--top) + 16px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   font-size: 13.5px;
-  max-height: calc(100vh - 32px);
+  max-height: calc(100vh - var(--top) - 32px);
   overflow-y: auto;
 }
 .toc div {
@@ -936,8 +947,8 @@ pre {
 /* 左栏：全书目录 */
 .contents {
   position: sticky;
-  top: 16px;
-  max-height: calc(100vh - 32px);
+  top: calc(var(--top) + 16px);
+  max-height: calc(100vh - var(--top) - 32px);
   overflow-y: auto;
   overscroll-behavior: contain;
   font-size: 14px;
@@ -946,26 +957,6 @@ pre {
 }
 .contents-toggle {
   display: none;
-}
-.contents-book {
-  padding: 10px 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.contents-book b {
-  font-family: var(--head);
-  font-size: 18px;
-  font-weight: 900;
-}
-.contents-book i,
-.contents-book p {
-  font-size: 13px;
-  color: var(--ink-3);
-}
-.contents-book p {
-  line-height: 1.65;
-  color: var(--ink-2);
 }
 .contents ol {
   list-style: none;
@@ -1005,7 +996,7 @@ pre {
   font-weight: 700;
 }
 .md h3 {
-  scroll-margin-top: 8px;
+  scroll-margin-top: calc(var(--top) + 12px);
 }
 .md {
   line-height: 1.9;
@@ -1020,7 +1011,7 @@ pre {
   margin-top: 2.4em;
   padding-top: 0.9em;
   border-top: 1px solid var(--edge);
-  scroll-margin-top: 8px;
+  scroll-margin-top: calc(var(--top) + 12px);
 }
 .md > h2:first-child {
   margin-top: 0;
@@ -1182,6 +1173,31 @@ pre {
   line-height: 1.45;
 }
 
+/* 窄屏的顶栏：站名和搜索框一行，导航一行，整体保持紧凑 */
+@media (max-width: 860px) {
+  .nav {
+    gap: 4px 12px;
+    padding-block: 8px 4px;
+  }
+  .logo {
+    font-size: 16px;
+  }
+  .search {
+    order: 1;
+    flex: 1 1 120px;
+    max-width: none;
+    height: 34px;
+    padding: 0 14px;
+  }
+  .nav nav {
+    order: 2;
+    flex-basis: 100%;
+    flex-wrap: nowrap;
+    gap: 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+}
 /* 书：放不下三栏时先收起右栏，再把目录收成正文上方的按钮 */
 @media (max-width: 1240px) {
   .reading {
@@ -1231,9 +1247,6 @@ pre {
   .contents.open .contents-body {
     display: block;
   }
-  .contents-book {
-    padding: 4px 8px 12px;
-  }
   .contents ol a {
     padding: 9px 8px;
   }
@@ -1282,11 +1295,6 @@ pre {
   }
   .hero {
     padding-block: 32px 8px;
-  }
-  .search {
-    margin-left: 0;
-    max-width: none;
-    flex-basis: 100%;
   }
   .covers {
     grid-template-columns: repeat(2, minmax(0, 1fr));
