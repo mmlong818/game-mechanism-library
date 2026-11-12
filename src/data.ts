@@ -43,10 +43,13 @@ export const isLib = (v: string): v is LibId => LIBS.some((l) => l.id === v);
 export const libName = (id: string) => LIBS.find((l) => l.id === id)?.name ?? id;
 
 export const LEVELS = ["具体机制", "机制家族", "设计模式"];
-export const tagLabel = (t: string) => (t === "new" ? "新机制" : t === "thin" ? "简版" : t);
+// 带 new 标签的机制，对访客叫“少见做法”：市面上少见的规则，或原创的规则设想。
+export const RARE = "少见做法";
+export const tagLabel = (t: string) => (t === "new" ? RARE : t);
 
 export type Core = {
   release: string;
+  updated: string;
   contract: string;
   counts: Record<LibId, number>;
   total: number;
@@ -70,7 +73,7 @@ function getJson<T>(path: string, fresh = false): Promise<T> {
   let p = cache.get(path) as Promise<T> | undefined;
   if (!p) {
     p = fetch(asset(path), fresh ? { cache: "no-cache" } : undefined).then((r) => {
-      if (!r.ok) throw new Error(`读取 ${path} 失败（${r.status}）`);
+      if (!r.ok) throw new Error(`${path} (${r.status})`);
       return r.json() as Promise<T>;
     });
     p.catch(() => cache.delete(path));
@@ -92,7 +95,7 @@ export function loadCore(): Promise<Core> {
     const root = `data/release/${release}`;
     const manifest = await getJson<Manifest>(`${root}/manifest.json`);
     if (String(manifest.contract_version).split(".")[0] !== "1") {
-      throw new Error(`发布包的约定版本是 ${manifest.contract_version}，这个页面只认 1.x，没有加载。`);
+      throw new Error(`unsupported contract version ${manifest.contract_version}`);
     }
     // 不认识的库或 kind 一律跳过。
     const present = LIBS.filter((l) => manifest.collections.some((c) => c.id === l.id && c.kind === "cards"));
@@ -105,8 +108,10 @@ export function loadCore(): Promise<Core> {
     });
     const names = new Map<string, string>();
     for (const l of present) for (const g of groups[l.id]) names.set(`${l.id}/${g.id}`, g.name);
+    const d = /^(\d{4})-(\d{2})-(\d{2})/.exec(release);
     return {
       release,
+      updated: d ? `${d[1]} 年 ${Number(d[2])} 月 ${Number(d[3])} 日` : "",
       contract: manifest.contract_version,
       counts,
       total: counts.mechanism + counts.world + counts.experience,

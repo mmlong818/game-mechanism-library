@@ -243,11 +243,13 @@ pre {
   gap: 18px;
 }
 .hero h1 {
-  font-size: clamp(32px, 6vw, 60px);
+  font-size: clamp(28px, 6vw, 60px);
   line-height: 1.14;
   font-weight: 900;
   letter-spacing: -0.01em;
-  max-width: 18em;
+}
+.hero h1 span {
+  display: inline-block;
 }
 .hero p {
   color: var(--ink-2);

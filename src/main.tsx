@@ -1,10 +1,10 @@
 import { StrictMode, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import "./globals.css";
-import { LIBS, useCore, type Core } from "./data";
+import { LIBS, RARE, useCore, type Core } from "./data";
 import { EntryPage } from "./entry";
 import { Home } from "./home";
-import { ArticlesPage, McpPage } from "./info";
+import { McpPage } from "./info";
 import { CollectionPage, GroupPage, NewPage, SearchPage } from "./lists";
 import { goHome, href, replaceHash, useRoute, type Route } from "./router";
 import { Status } from "./ui";
@@ -50,9 +50,6 @@ function Header({ route, core }: { route: Route; core?: Core }) {
             {l.name}
           </a>
         ))}
-        <a href={href.articles} aria-current={current(route.name === "articles")}>
-          专题
-        </a>
         <a href={href.mcp} aria-current={current(route.name === "mcp")}>
           接入 AI
         </a>
@@ -83,12 +80,10 @@ function Footer({ core }: { core?: Core }) {
       <div className="foot">
         <div>
           <Logo />
-          <p>猫叔整理。给做游戏的人查机制、世界观和玩家体验。</p>
-          {core && (
-            <p className="rel">
-              发布版 <span className="num">{core.release}</span> · 共 {core.total} 张卡片
-            </p>
-          )}
+          <p>给做游戏的人查机制、世界观和玩家体验。</p>
+          <p className="rel">
+            作者：猫叔{core?.updated ? ` · 更新于 ${core.updated}` : ""}
+          </p>
         </div>
         <div>
           <h3>卡片库</h3>
@@ -104,13 +99,10 @@ function Footer({ core }: { core?: Core }) {
           </ul>
         </div>
         <div>
-          <h3>专区</h3>
+          <h3>找卡片</h3>
           <ul>
             <li>
-              <a href={href.newList}>新机制</a>
-            </li>
-            <li>
-              <a href={href.articles}>专题文章</a>
+              <a href={href.rare}>{RARE}</a>
             </li>
             <li>
               <a href={href.search("")}>搜索</a>
@@ -118,10 +110,10 @@ function Footer({ core }: { core?: Core }) {
           </ul>
         </div>
         <div>
-          <h3>使用</h3>
+          <h3>在 AI 里用</h3>
           <ul>
             <li>
-              <a href={href.mcp}>接入 AI 工具</a>
+              <a href={href.mcp}>接入 AI</a>
             </li>
           </ul>
         </div>
@@ -146,8 +138,6 @@ function Page({ route, core }: { route: Route; core: Core }) {
       return <SearchPage core={core} q={route.q} c={route.c} />;
     case "mcp":
       return <McpPage core={core} />;
-    case "articles":
-      return <ArticlesPage />;
     default:
       return null;
   }
@@ -187,7 +177,7 @@ function App() {
       </a>
       <Header route={route} core={core} />
       <main id="main" className={`in ${route.name === "home" ? "home" : "page"}`} tabIndex={-1}>
-        {core ? <Page route={route} core={core} /> : <Status error={error} what="发布包" />}
+        {core ? <Page route={route} core={core} /> : <Status error={error} />}
       </main>
       <Footer core={core} />
     </>

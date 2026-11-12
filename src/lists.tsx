@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { LEVELS, LIBS, cover, loadIndex, useAll, useAsync, type Core, type LibId, type Shell } from "./data";
+import { LEVELS, LIBS, RARE, cover, loadIndex, useAll, useAsync, type Core, type LibId, type Shell } from "./data";
 import { goHome, href } from "./router";
 import { Chips, Crumbs, EntryList, PageHead, Status, useTitle } from "./ui";
 
 const MECH_FILTERS = [
   { value: "", label: "全部" },
   ...LEVELS.map((l) => ({ value: l, label: l })),
-  { value: "new", label: "新机制" },
+  { value: "new", label: RARE },
 ];
 const cleanTag = (lib: LibId, tag: string) => (lib === "mechanism" && MECH_FILTERS.some((f) => f.value === tag) ? tag : "");
 const match = (e: Shell, tag: string) => !tag || e.tags.includes(tag);
@@ -32,22 +32,22 @@ export function CollectionPage({ core, lib, tag: rawTag }: { core: Core; lib: Li
       <Crumbs items={[{ label: meta.name }]} />
       <PageHead
         title={`${meta.name}库`}
-        lead={`${meta.blurb}共 ${core.counts[lib]} ${meta.unit}，分 ${groups.length} 个${meta.groupWord}。`}
+        lead={`${meta.blurb}共 ${core.counts[lib]} ${meta.unit}，分 ${groups.length} 个${meta.groupWord}。点一个${meta.groupWord}看里面的卡片。`}
       />
       {lib === "mechanism" && (
         <>
           <Chips
-            label="按层级筛选"
+            label="筛选"
             value={tag}
             to={(v) => href.collection(lib, v)}
             options={MECH_FILTERS.map((f) => ({ ...f, count: tagCount(f.value) }))}
           />
           <p className="hint">
-            具体机制是一条可以直接照做的规则；机制家族是同一思路下的一组做法；设计模式由几条机制组合而成。新机制是原创的或新发现的做法。
+            具体机制是一条可以直接照做的规则；机制家族是同一思路下的一组做法；设计模式由几条机制组合而成。{RARE}是市面上很少见到的规则，或者还没有游戏用过的原创设想。
           </p>
         </>
       )}
-      {error && <Status error={error} what="目录" />}
+      {error && <Status error={error} />}
       <ul className="glist">
         {rows.map(({ g, items, count }) => (
           <li key={g.id}>
@@ -69,7 +69,7 @@ export function CollectionPage({ core, lib, tag: rawTag }: { core: Core; lib: Li
           </li>
         ))}
       </ul>
-      {index && rows.length === 0 && <p className="status">这个筛选下没有条目。</p>}
+      {index && rows.length === 0 && <p className="status">没有符合的卡片。换一个筛选看看。</p>}
     </>
   );
 }
@@ -99,12 +99,12 @@ export function GroupPage({ core, lib, group, tag: rawTag }: { core: Core; lib: 
       <PageHead
         title={g.name}
         img={cover(`${lib}-${g.id}`)}
-        lead={`${meta.name}库的一个${meta.groupWord}，共 ${g.count} ${meta.unit}。`}
+        lead={`${g.count} ${meta.unit}${meta.name}卡片。点标题看全文。`}
       />
       <div className="tools">
         {lib === "mechanism" && (
           <Chips
-            label="按层级筛选"
+            label="筛选"
             value={tag}
             to={(v) => href.group(lib, group, v)}
             options={MECH_FILTERS.map((f) => ({ ...f, count: inGroup.filter((e) => match(e, f.value)).length })).filter(
@@ -114,32 +114,32 @@ export function GroupPage({ core, lib, group, tag: rawTag }: { core: Core; lib: 
         )}
         {g.count > 12 && (
           <label className="mini-search">
-            <span className="sr">在本组内筛选</span>
-            <input type="search" value={text} onChange={(e) => setText(e.target.value)} placeholder="在本组内筛选" />
+            <span className="sr">在这一页里找</span>
+            <input type="search" value={text} onChange={(e) => setText(e.target.value)} placeholder="在这一页里找" />
           </label>
         )}
       </div>
       {!index ? (
-        <Status error={error} what="条目列表" />
+        <Status error={error} />
       ) : items.length ? (
         <>
           {(tag || needle) && (
             <p className="hint">
-              符合条件的有 {items.length} {meta.unit}。
+              找到 {items.length} {meta.unit}。
             </p>
           )}
           <EntryList items={items} core={core} />
         </>
       ) : (
-        <p className="status">没有符合条件的条目。</p>
+        <p className="status">没有符合的卡片。换个词或换一个筛选看看。</p>
       )}
     </>
   );
 }
 
-// 新机制列表：带 new 标签的机制，按主题分段。
+// 少见做法列表：带 new 标签的机制，按主题分段。
 export function NewPage({ core }: { core: Core }) {
-  useTitle("新机制");
+  useTitle(RARE);
   const { data: index, error } = useAsync(() => loadIndex("mechanism"), []);
   const fresh = index?.filter((e) => e.tags.includes("new")) ?? [];
   const sections = core.groups.mechanism
@@ -148,17 +148,17 @@ export function NewPage({ core }: { core: Core }) {
     .sort((a, b) => b.items.length - a.items.length);
   return (
     <>
-      <Crumbs items={[{ label: "机制", to: href.collection("mechanism") }, { label: "新机制" }]} />
+      <Crumbs items={[{ label: "机制", to: href.collection("mechanism") }, { label: RARE }]} />
       <PageHead
-        title="新机制"
+        title={RARE}
         img={cover("section-new")}
         lead={
           index
-            ? `共 ${fresh.length} 张，分布在 ${sections.length} 个主题里。这些是原创的，或者新发现的机制：有的来自联网搜集到的少见做法，有的是写卡时提出的。`
-            : "原创的，或者新发现的机制。"
+            ? `${fresh.length} 张机制卡片，分在 ${sections.length} 个主题里。有的是市面上很少见到的规则，只在个别游戏里出现过；有的是还没有游戏用过的原创设想。想找没见过的点子，从这里翻。`
+            : "市面上很少见到的规则，以及还没有游戏用过的原创设想。"
         }
       />
-      {!index && <Status error={error} what="新机制列表" />}
+      {!index && <Status error={error} />}
       {sections.length > 0 && (
         <nav className="jump" aria-label="按主题跳转">
           {sections.map((s) => (
@@ -235,13 +235,13 @@ export function SearchPage({ core, q, c }: { core: Core; q: string; c: string })
       <Crumbs items={[{ label: "搜索" }]} />
       <PageHead
         title={q.trim() ? `搜索“${q.trim()}”` : "搜索"}
-        lead="在三个库里查名称、一句话定义和分组名。多个词用空格隔开，要同时出现才算。"
+        lead="可以搜卡片的名称、开头那句话和所在的分组。多个词用空格隔开，会找同时包含这些词的卡片。"
       />
       {!all ? (
-        <Status error={error} what="索引" />
+        <Status error={error} />
       ) : !terms.length ? (
         <p className="status">
-          在页面顶部的搜索框里输入要找的词。可以试试：
+          在页面顶部的搜索框里输入想找的词，比如一种玩法，或者你想解决的问题里的关键词。可以试试：
           {EXAMPLES.map((x) => (
             <a key={x} className="eg" href={href.search(x)}>
               {x}
@@ -269,7 +269,7 @@ export function SearchPage({ core, q, c }: { core: Core; q: string; c: string })
               )}
             </>
           ) : (
-            <p className="status">没有找到。换个更短的词试试，比如只留两三个字。</p>
+            <p className="status">没有找到相关的卡片。换个更短的词试试，比如只留两三个字。</p>
           )}
         </>
       )}

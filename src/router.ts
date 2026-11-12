@@ -1,4 +1,4 @@
-// hash 路由。不认识的地址（包括旧版的 #community、#favorites、m_ 开头的卡片 id）一律回首页。
+// hash 路由。不认识的地址（包括旧版的 #community、#favorites、m_ 开头的卡片 id，以及暂时撤下的 #/articles）一律回首页。
 import { useEffect, useState } from "react";
 import { isLib, type LibId } from "./data";
 
@@ -10,7 +10,6 @@ export type Route =
   | { name: "new" }
   | { name: "search"; q: string; c: string }
   | { name: "mcp" }
-  | { name: "articles" }
   | { name: "unknown" };
 
 export function parse(hash: string): Route {
@@ -29,7 +28,6 @@ export function parse(hash: string): Route {
   if (seg.length === 1) {
     if (a === "new") return { name: "new" };
     if (a === "mcp") return { name: "mcp" };
-    if (a === "articles") return { name: "articles" };
     if (a === "search") return { name: "search", q: query.get("q") ?? "", c: query.get("c") ?? "" };
   }
   if (a === "c" && b && isLib(b)) {
@@ -47,7 +45,7 @@ export const href = {
   group: (lib: string, group: string, tag = "") =>
     `#/c/${lib}/${encodeURIComponent(group)}${tag ? `?tag=${encodeURIComponent(tag)}` : ""}`,
   entry: (globalId: string) => `#/e/${globalId.split("/").map(encodeURIComponent).join("/")}`,
-  newList: "#/new",
+  rare: "#/new",
   search: (q: string, c = "") => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
@@ -56,7 +54,6 @@ export const href = {
     return `#/search${s ? `?${s}` : ""}`;
   },
   mcp: "#/mcp",
-  articles: "#/articles",
 };
 
 export function goHome() {

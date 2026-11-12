@@ -8,32 +8,33 @@ export function useTitle(title: string) {
   }, [title]);
 }
 
-export function Status({ error, what = "内容" }: { error?: Error; what?: string }) {
+export function Status({ error }: { error?: Error }) {
   if (error) {
+    console.warn(error);
     return (
       <p className="status" role="alert">
-        {what}没有读出来：{error.message}
+        这一页没有加载出来。请刷新页面再试一次。
       </p>
     );
   }
   return (
     <p className="status" aria-live="polite">
-      正在读取{what}……
+      正在加载……
     </p>
   );
 }
 
 export function Tags({ tags }: { tags: string[] }) {
-  const shown = [
-    ...tags.filter((t) => LEVELS.includes(t)),
-    ...tags.filter((t) => t === "new"),
-    ...tags.filter((t) => t === "thin"),
-  ];
+  const shown = [...tags.filter((t) => LEVELS.includes(t)), ...tags.filter((t) => t === "new")];
   if (!shown.length) return null;
   return (
     <span className="tags">
       {shown.map((t) => (
-        <span key={t} className={`tag ${t === "new" ? "tag-new" : ""}`} title={t === "thin" ? "案例较少的简版" : undefined}>
+        <span
+          key={t}
+          className={`tag ${t === "new" ? "tag-new" : ""}`}
+          title={t === "new" ? "市面上少见的规则，或原创的规则设想" : undefined}
+        >
           {tagLabel(t)}
         </span>
       ))}
