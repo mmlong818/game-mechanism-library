@@ -1,0 +1,8 @@
+[
+  { "need": "想让牌组越打越精", "to": "mechanism/remove-cards-to-thin-deck" },
+  { "need": "想给强力增益设个代价", "to": "mechanism/buff-followed-by-equal-backlash" },
+  { "need": "想让领先的人让出先手", "to": "mechanism/better-pick-means-later-next-pick" },
+  { "need": "想做一个信任要靠别人担保的社会", "to": "world/nothing-done-without-a-guarantor" },
+  { "need": "想让玩家看得见自己变强了", "to": "experience/returning-to-crush-early-threat" },
+  { "need": "想让早先的选择过很久才显出后果", "to": "experience/old-decision-surfaces-later" }
+]

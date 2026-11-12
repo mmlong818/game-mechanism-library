@@ -9,7 +9,7 @@ const segments = configuredBase.split("/").filter(Boolean);
 const base = segments.length ? `/${segments.join("/")}/` : "/";
 const host = process.env.PREVIEW_HOST || "127.0.0.1";
 const port = Number(process.env.PREVIEW_PORT || 4399);
-const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".txt": "text/plain; charset=utf-8", ".png": "image/png", ".ico": "image/x-icon" };
+const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".txt": "text/plain; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".ico": "image/x-icon" };
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || "/", `http://${req.headers.host || `${host}:${port}`}`);
   let pathname;
