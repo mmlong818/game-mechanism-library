@@ -4,7 +4,7 @@ import "./globals.css";
 import { BookPage, ChapterPage } from "./book";
 import { BOOK_NAME, LIBS, useCore, type Core } from "./data";
 import { BrowsePage, EntryRedirect } from "./browse";
-import { McpPage } from "./info";
+import { LicensePage, McpPage } from "./info";
 import { SearchPage } from "./lists";
 import { goHome, href, replaceHash, useRoute, type Route } from "./router";
 import { Status } from "./ui";
@@ -77,6 +77,9 @@ function Header({ route, core }: { route: Route; core?: Core }) {
       >
         <input ref={input} type="search" placeholder="搜卡片和书" aria-label="搜索卡片和书" onChange={(e) => type(e.target.value)} />
       </form>
+      <a className="lic" href={href.license} aria-current={current(route.name === "license")}>
+        版权
+      </a>
     </header>
     </div>
   );
@@ -96,6 +99,8 @@ function Page({ route, core }: { route: Route; core: Core }) {
       return <SearchPage core={core} q={route.q} c={route.c} />;
     case "mcp":
       return <McpPage />;
+    case "license":
+      return <LicensePage />;
     default:
       return null;
   }
@@ -110,9 +115,9 @@ function App() {
   }, [route.name]);
   // 换页回到顶部；搜索时改词不动。卡片库的三栏界面各栏自己滚动，页面本身不滚。
   const place = route.name === "chapter" ? route.id : route.name;
-  // 三栏界面占满视口，不放页脚；署名和更新日期只在搜索页和接入 AI 页底部。
+  // 三栏界面占满视口，不放页脚；署名和更新日期只在搜索页、接入 AI 页和版权页底部。
   const fill = route.name === "browse";
-  const foot = route.name === "search" || route.name === "mcp";
+  const foot = route.name === "search" || route.name === "mcp" || route.name === "license";
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [place]);

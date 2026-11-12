@@ -128,6 +128,7 @@ function Contents({ chapters, current }: { chapters: Shell[]; current: string })
             {list(appendix)}
           </>
         )}
+        <p className="contents-note">© 猫叔 · 禁止商用与改编</p>
       </div>
     </nav>
   );

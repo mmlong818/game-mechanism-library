@@ -9,7 +9,8 @@
 - `public/data/current.json`：当前用哪个发布包，例如 `{"release":"2026-11-13.1"}`。
 - `public/data/release/<发布编号>/`：发布包原样复制进来，不要改里面的文件。
 - `public/covers/`：卡片库左栏分组名前面的像素封面缩略图，512×512 的 jpg，每个分组一张，文件名是 `<库>-<分组 slug>.jpg`。
-- `src/`：页面代码。`data.ts` 读发布包，`router.ts` 是 hash 路由，`browse.tsx` 是卡片库的三栏界面，`entry.tsx` 是其中右栏的卡片全文，`lists.tsx` 是搜索，`book.tsx` 是书的三栏阅读界面，`info.tsx` 是接入 AI 说明。
+- `public/site-config.json`：站点配置，部署后可以直接改，不用重新构建（见下面“站点配置”一节）。
+- `src/`：页面代码。`config.ts` 读站点配置，`data.ts` 读发布包，`router.ts` 是 hash 路由，`browse.tsx` 是卡片库的三栏界面，`entry.tsx` 是其中右栏的卡片全文，`lists.tsx` 是搜索，`book.tsx` 是书的三栏阅读界面，`info.tsx` 是接入 AI 说明和版权页。
 - `scripts/check-data.mjs`：核对发布包。`scripts/resize-covers.py`：把封面缩到 512×512。`scripts/preview-pages.mjs`：按 GitHub Pages 的子路径预览 `dist`。
 
 ## 本地构建
@@ -22,7 +23,7 @@ npm run check:data
 npm run build
 ```
 
-部署到 GitHub Pages 项目路径时，用 `VITE_BASE_PATH=/game-mechanism-library/` 构建（工作流里已经设好，不设时默认也是这个路径）。本地预览：
+默认用相对路径构建（`base: "./"`）：同一份 `dist` 放在域名根目录或任意子路径下都能用，数据、封面图、脚本和样式都按相对地址加载。GitHub Pages 的工作流里仍然用 `VITE_BASE_PATH=/game-mechanism-library/` 构建，结果一样可用。按 GitHub Pages 的子路径在本地预览：
 
 ```sh
 VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
@@ -30,6 +31,21 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 ```
 
 推送到 `main` 后由 `.github/workflows/pages.yml` 构建并部署 `dist`。
+
+## 站点配置
+
+`site-config.json` 放在站点根目录（源码里是 `public/site-config.json`），页面每次打开时读取。四个字段都可以留空；文件缺失或格式不对时页面按全部留空处理，不会出错。
+
+| 字段 | 作用 |
+|---|---|
+| `mcp_url` | 公开的 MCP 网址，例如 `https://mcp.example.com/mcp`。填了，“接入 AI”页就给出这个网址的接法；没填显示“即将开放” |
+| `mcp_name` | 在 AI 工具里给这个服务起的名字，默认 `game-design-library` |
+| `local_download_url` | 本地安装版的下载地址。填了，“接入 AI”页就给出本地安装的步骤；没填显示“即将开放” |
+| `contact` | 作者的联系方式（邮箱、网址或一句话）。填了，“版权”页的“请联系作者”后面带上它 |
+
+## 授权
+
+代码采用 PolyForm Noncommercial License 1.0.0（见 `LICENSE`、`NOTICE`），版权人猫叔。内容（卡片文字、书、封面图）采用 CC BY-NC-ND 4.0，署名“猫叔”。
 
 ## 怎样更新发布包
 
@@ -58,6 +74,7 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 | `#/e/book/<id>` | 章节阅读页（三栏） |
 | `#/search?q=<词>&c=<库>` | 搜索 |
 | `#/mcp` | 接入 AI 说明 |
+| `#/license` | 版权。入口只有顶栏最右侧的小字“版权” |
 
 每个页面只有一条浏览路径：导航进库，打开就是三栏，左栏选分组，中栏选卡片，右栏读全文，不用来回跳页。书从导航直接进阅读界面，左栏是全书目录，页尾有上一章、下一章；没有单独的目录页。接入 AI 只从导航进。三栏界面和书的页面不放页脚；署名和更新日期只在搜索页和接入 AI 页的底部，页脚不放链接。
 

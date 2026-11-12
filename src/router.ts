@@ -5,6 +5,7 @@
 //   #/e/book/<id>          章节阅读页（左栏全书目录，中栏正文，右栏本章小节）
 //   #/search?q=&c=         搜索
 //   #/mcp                  接入 AI
+//   #/license              版权
 // 下面这些地址会补全成正式地址（改写当前地址，不多留一条历史）：
 //   #/、#/c/mechanism       机制库的第一个分组、第一张卡
 //   #/c/<库>               该库的第一个分组、第一张卡
@@ -22,6 +23,7 @@ export type Route =
   | { name: "chapter"; id: string }
   | { name: "search"; q: string; c: string }
   | { name: "mcp" }
+  | { name: "license" }
   | { name: "unknown" };
 
 export function parse(hash: string): Route {
@@ -39,6 +41,7 @@ export function parse(hash: string): Route {
   const [a, b, c, d] = seg;
   if (seg.length === 1) {
     if (a === "mcp") return { name: "mcp" };
+    if (a === "license") return { name: "license" };
     if (a === "search") return { name: "search", q: query.get("q") ?? "", c: query.get("c") ?? "" };
   }
   if (a === "c" && b === BOOK && seg.length <= 3) return { name: "book", slug: c ?? "" };
@@ -69,6 +72,7 @@ export const href = {
   },
   book: (slug = "") => `#/c/${BOOK}${slug ? `/${enc(slug)}` : ""}`,
   mcp: "#/mcp",
+  license: "#/license",
 };
 
 export function replaceHash(hash: string) {
