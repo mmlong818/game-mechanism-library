@@ -1,0 +1,27 @@
+# 示例：把 MCP 服务跑在容器里，只在本机的 8787 端口上监听，由宿主机上的反向代理（Nginx 等）对外提供 HTTPS。
+# 用法：先把 .env.example 复制成 .env 并按实际情况修改，然后 docker compose up -d --build
+services:
+  mcp:
+    build: .
+    image: game-design-library-mcp:0.2.0
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # 容器内必须监听 0.0.0.0，外面才连得进来；对外暴露的范围由下面的 ports 决定
+      GDL_HTTP_HOST: 0.0.0.0
+      GDL_HTTP_PORT: "8787"
+      GDL_CACHE_DIR: /tmp/gdl-cache
+    ports:
+      # 只绑定宿主机的回环地址；不要改成 0.0.0.0，除非前面另有防火墙和反向代理
+      - "127.0.0.1:8787:8787"
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    # 数据来源用本地目录时，去掉下面两行的注释，并在 .env 里设 GDL_RELEASE_DIR=/data/release
+    # volumes:
+    #   - ../site/data/release/2026-11-13.1:/data/release:ro

@@ -1,0 +1,37 @@
+{
+  "name": "game-design-library-mcp",
+  "version": "0.2.0",
+  "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "author": "猫叔",
+  "homepage": "https://github.com/mmlong818/game-mechanism-library",
+  "description": "猫叔的游戏知识库的 MCP 服务（只读）：机制、世界观、体验三个卡片库的搜索与取卡",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "game-design-library-mcp": "dist/stdio.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/stdio.js",
+    "start:http": "node dist/http.js",
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:http": "node scripts/smoke-http.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^7.0.2"
+  }
+}
