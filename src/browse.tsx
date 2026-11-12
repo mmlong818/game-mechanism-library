@@ -126,8 +126,7 @@ export function BrowsePage({ core, lib, group, card }: { core: Core; lib: LibId;
             {inGroup.map((e) => (
               <li key={e.id}>
                 <a href={href.card(e)} aria-current={e.id === shell?.id ? "true" : undefined} onClick={() => setOpen(false)}>
-                  <b className="list-name">{e.name}</b>
-                  <span className="list-sum">{e.summary}</span>
+                  {e.name}
                 </a>
               </li>
             ))}

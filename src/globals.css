@@ -351,7 +351,7 @@ pre {
 /* 卡片库的三栏界面：左栏分组，中栏卡片列表，右栏卡片全文。三栏各自滚动。 */
 .three {
   display: grid;
-  grid-template-columns: 232px 348px minmax(0, 1fr);
+  grid-template-columns: 232px 280px minmax(0, 1fr);
   height: calc(100vh - var(--top));
   height: calc(100dvh - var(--top));
 }
@@ -448,32 +448,21 @@ pre {
   padding: 8px 8px 24px;
 }
 .list-items a {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 9px 10px;
+  display: block;
+  padding: 6px 10px;
   border-radius: 8px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
 }
 .list-items a:hover {
   background: var(--plate);
+  color: var(--ink);
 }
 .list-items a[aria-current] {
   background: var(--plate-2);
-}
-.list-name {
-  font-family: var(--head);
-  font-size: 15px;
-  line-height: 1.45;
-}
-.list-sum {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--ink-2);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
+  color: var(--ink);
+  font-weight: 700;
 }
 .col-card {
   padding: 0 0 48px 32px;
@@ -1115,7 +1104,7 @@ pre {
 /* 卡片库：放不下三栏时左栏收成中栏顶部的下拉选择；再窄只留正文，分组和列表收进抽屉 */
 @media (max-width: 1240px) {
   .three {
-    grid-template-columns: 320px minmax(0, 1fr);
+    grid-template-columns: 280px minmax(0, 1fr);
   }
   .col-groups,
   .list-title {
