@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "game-design-library": {
+      "command": "node",
+      "args": ["<解压位置>/mcp/dist/stdio.js", "--site-url", "https://example.com"]
+    }
+  }
+}

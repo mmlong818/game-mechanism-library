@@ -1,0 +1,42 @@
+# systemd 服务文件示例：猫叔的游戏知识库 MCP 服务（HTTP 入口）。
+# 放到 /etc/systemd/system/game-design-library-mcp.service，按实际情况改三处：
+#   WorkingDirectory  包里 mcp/ 目录在服务器上的位置（已经在里面运行过 npm ci）
+#   ExecStart         node 的实际路径（which node）
+#   EnvironmentFile   环境变量文件（见同目录的 mcp.env）
+# 然后：systemctl daemon-reload && systemctl enable --now game-design-library-mcp
+
+[Unit]
+Description=Game Design Library MCP server (read-only, Streamable HTTP)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gdl-mcp
+Group=gdl-mcp
+WorkingDirectory=/opt/game-design-library/mcp
+EnvironmentFile=/etc/game-design-library/mcp.env
+ExecStart=/usr/bin/node dist/http.js
+Restart=on-failure
+RestartSec=5
+
+# 缓存目录：systemd 会创建 /var/cache/gdl-mcp 并交给运行用户（mcp.env 里的 GDL_CACHE_DIR 指向它）
+CacheDirectory=gdl-mcp
+
+# 加固：服务只读，除缓存目录外不需要写任何地方
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

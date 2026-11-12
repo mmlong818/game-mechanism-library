@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "game-design-library": {
+      "command": "node",
+      "args": ["<解压位置>/mcp/dist/stdio.js"],
+      "env": {
+        "GDL_RELEASE_DIR": "<发布包目录>"
+      }
+    }
+  }
+}
