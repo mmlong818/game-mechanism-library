@@ -112,7 +112,7 @@ pre {
   font-variant-numeric: tabular-nums;
 }
 .in {
-  max-width: 1200px;
+  max-width: 1560px;
   margin: 0 auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -525,7 +525,7 @@ pre {
 }
 .lead dd {
   margin: 2px 0 0;
-  max-width: 42em;
+  max-width: 48em;
   color: var(--ink-2);
 }
 .lead dd.definition {
@@ -557,7 +557,7 @@ pre {
 .body > ul,
 .body > dl,
 .body > div {
-  max-width: 44em;
+  max-width: 48em;
 }
 .body ul {
   display: flex;
@@ -775,7 +775,7 @@ pre {
 
 /* 说明页 */
 .prose {
-  max-width: 46em;
+  max-width: 48em;
   line-height: 1.8;
   padding-bottom: 24px;
 }
@@ -915,12 +915,12 @@ pre {
   size-adjust: 83.05%;
 }
 
-/* 书：章节阅读页。正文一行约 38 个汉字 */
+/* 书：章节阅读页。正文一行最多 48 个汉字 */
 .reading {
   display: grid;
-  grid-template-columns: 236px minmax(0, 38em) 196px;
+  grid-template-columns: 280px minmax(0, 48em) 240px;
   justify-content: space-between;
-  gap: 36px;
+  gap: 40px;
   align-items: start;
   font-size: 17px;
 }
@@ -1183,9 +1183,9 @@ pre {
 }
 
 /* 书：放不下三栏时先收起右栏，再把目录收成正文上方的按钮 */
-@media (max-width: 1180px) {
+@media (max-width: 1240px) {
   .reading {
-    grid-template-columns: 236px minmax(0, 38em);
+    grid-template-columns: 280px minmax(0, 48em);
     justify-content: center;
     gap: 40px;
   }
@@ -1195,7 +1195,7 @@ pre {
 }
 @media (max-width: 900px) {
   .reading {
-    grid-template-columns: minmax(0, 38em);
+    grid-template-columns: minmax(0, 48em);
     gap: 0;
   }
   .contents {
