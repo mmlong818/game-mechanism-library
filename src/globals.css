@@ -219,17 +219,6 @@ pre {
 .lic a[aria-current] {
   color: var(--ink);
 }
-.way pre {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.way ol {
-  list-style: decimal;
-  padding-left: 1.3em;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
 .search:focus-within {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
@@ -813,39 +802,46 @@ th {
   font-weight: 500;
   white-space: nowrap;
 }
-.ways {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 12px;
+/* 接入 AI：分步骤的说明，代码块右上角有“复制”按钮 */
+.mcp h3 {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 22px 0 8px;
 }
-.way {
-  background: var(--plate);
-  border-radius: 16px;
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-  font-size: 14.5px;
+.mcp p + .code,
+.mcp .code + p {
+  margin-top: 8px;
 }
-.way h3 {
-  font-size: 18px;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.way p + p {
-  margin-top: 0;
-}
-.way figure {
-  margin: 0;
-}
-.way figcaption {
+.mcp .fine {
+  margin-top: 6px;
   font-size: 12.5px;
   color: var(--ink-3);
-  margin-bottom: 4px;
+}
+.code {
+  position: relative;
+}
+.code pre {
+  background: var(--plate);
+  padding: 12px 72px 12px 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.code button {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  min-width: 56px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--edge);
+  border-radius: 7px;
+  background: var(--canvas);
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.code button:hover {
+  color: var(--ink);
 }
 pre {
   margin: 0;
@@ -980,9 +976,6 @@ pre {
   }
 }
 @media (max-width: 560px) {
-    .ways {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .phead {
     gap: 14px;
     align-items: flex-start;

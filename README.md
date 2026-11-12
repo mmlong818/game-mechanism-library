@@ -38,9 +38,9 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 
 | 字段 | 作用 |
 |---|---|
-| `mcp_url` | 公开的 MCP 网址，例如 `https://mcp.example.com/mcp`。填了，“接入 AI”页就给出这个网址的接法；没填显示“即将开放” |
+| `mcp_url` | 公开的 MCP 网址，例如 `https://mcp.example.com/mcp`。填了，“接入 AI”页显示这个网址；没填显示占位地址 `https://你的域名/mcp`，并注明以上线后公布的为准 |
 | `mcp_name` | 在 AI 工具里给这个服务起的名字，默认 `game-design-library` |
-| `local_download_url` | 本地安装版的下载地址。填了，“接入 AI”页就给出本地安装的步骤；没填显示“即将开放” |
+| `local_download_url` | 本地安装版的下载地址。填了，“接入 AI”页的本地安装步骤写“下载并解压”；没填就用从 `repo_url` 的仓库 `git clone` 的占位写法，并注明以上线后公布的为准 |
 | `contact` | 作者的联系方式（邮箱、网址或一句话）。填了，“版权”页的“请联系作者”后面带上它 |
 | `repo_url` | 项目的 GitHub 仓库地址，默认 `https://github.com/mmlong818/game-mechanism-library`。有值时顶栏最右侧显示“GitHub”；没填 `contact` 时版权页引导到这个仓库提 issue。写成空字符串就都不显示 |
 
