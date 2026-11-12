@@ -6,7 +6,7 @@
 
 ## 目录
 
-- `public/data/current.json`：当前用哪个发布包，例如 `{"release":"2026-11-13.1"}`。
+- `public/data/current.json`：当前用哪个发布包，例如 `{"release":"2026-11-13.2"}`。
 - `public/data/release/<发布编号>/`：发布包原样复制进来，不要改里面的文件。
 - `public/covers/`：卡片库左栏分组名前面的像素封面缩略图，512×512 的 jpg，每个分组一张，文件名是 `<库>-<分组 slug>.jpg`。
 - `public/site-config.json`：站点配置，部署后可以直接改，不用重新构建（见下面“站点配置”一节）。

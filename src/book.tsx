@@ -1,13 +1,18 @@
 // 书：三栏阅读界面。左栏是全书目录，中栏是正文，右栏是本章小节。
 // 发布包里书是 kind 为 articles 的库，分组是一本书，条目是一章。
-// 导航“书”（#/c/book）在库里只有一本书时直接打开这本书的第 1 章；有多本时才是书单。
+// 导航“书”（#/c/book）在库里只有一本书时直接打开这本书的第一篇（有前言就是前言）；有多本时才是书单。
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Marked, type Tokens } from "marked";
-import { BOOK, BOOK_NAME, loadChapters, loadGroupCards, useAsync, type Core, type Group, type Shell } from "./data";
+import { BOOK, BOOK_NAME, loadChapters, loadGroupCards, useAsync, type Core, type Group, type Shell, type Volume } from "./data";
 import { goHome, href, replaceHash } from "./router";
 import { Status, useTitle } from "./ui";
 
 const isAppendix = (e: Shell) => e.tags.some((t) => /^part:\D/.test(t));
+// 章的序号（tags 里的 part:<数字>）；附录等不是数字的返回 NaN。
+const partOf = (e: Shell) => {
+  const t = e.tags.find((x) => /^part:\d+$/.test(x));
+  return t ? Number(t.slice(5)) : NaN;
+};
 
 function BookList({ books }: { books: Group[] }) {
   useTitle(BOOK_NAME);
@@ -33,7 +38,7 @@ function BookList({ books }: { books: Group[] }) {
   );
 }
 
-// #/c/book 和 #/c/book/<书>：落到那本书的第 1 章。库里有多本书而地址没指明哪一本时，显示书单。
+// #/c/book 和 #/c/book/<书>：落到那本书的第一篇。库里有多本书而地址没指明哪一本时，显示书单。
 export function BookPage({ core, slug }: { core: Core; slug: string }) {
   const book = core.books.length === 1 && !slug ? core.books[0] : core.books.find((b) => b.id === slug);
   const bad = !core.books.length || (slug !== "" && !book);
@@ -89,7 +94,9 @@ function render(source: string): { html: string; sections: Section[] } {
 }
 
 // 左栏：全书目录（书名在顶栏里，这里不重复）。宽屏固定在视口内、栏内滚动；窄屏收成正文上方的“目录”按钮。
-function Contents({ chapters, current }: { chapters: Shell[]; current: string }) {
+// 发布包里这本书带了分卷信息（volumes）时按卷分组：卷名是不可点的小标题，其下是该卷的章；
+// 不属于任何一卷的（如前言）排在最前，附录排在最后。没有分卷信息时就是一列章节加附录。
+function Contents({ chapters, current, volumes }: { chapters: Shell[]; current: string; volumes: Volume[] }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -114,6 +121,9 @@ function Contents({ chapters, current }: { chapters: Shell[]; current: string })
     </ol>
   );
   const appendix = chapters.filter(isAppendix);
+  const main = chapters.filter((e) => !isAppendix(e));
+  const inVolume = (e: Shell, v: Volume) => partOf(e) >= v.parts[0] && partOf(e) <= v.parts[1];
+  const loose = main.filter((e) => !volumes.some((v) => inVolume(e, v)));
   return (
     <nav ref={box} className={`contents${open ? " open" : ""}`} aria-label="全书目录">
       <button type="button" className="contents-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
@@ -121,7 +131,16 @@ function Contents({ chapters, current }: { chapters: Shell[]; current: string })
         <i aria-hidden="true">{open ? "收起" : "展开"}</i>
       </button>
       <div className="contents-body">
-        {list(chapters.filter((e) => !isAppendix(e)))}
+        {loose.length > 0 && list(loose)}
+        {volumes.map((v) => {
+          const items = main.filter((e) => inVolume(e, v));
+          return items.length ? (
+            <section key={v.title}>
+              <div className="contents-sub">{v.title}</div>
+              {list(items)}
+            </section>
+          ) : null;
+        })}
         {appendix.length > 0 && (
           <>
             <div className="contents-sub">附录</div>
@@ -199,13 +218,17 @@ export function ChapterPage({ core, id }: { core: Core; id: string }) {
   if (!chapters || !shell) return <Status error={error} />;
 
   const same = chapters.filter((e) => e.group === shell.group);
+  const raw = core.books.find((b) => b.id === shell.group)?.volumes;
+  const volumes = (Array.isArray(raw) ? raw : []).filter(
+    (v) => v && typeof v.title === "string" && Array.isArray(v.parts) && v.parts.length === 2,
+  );
   const at = same.findIndex((e) => e.id === id);
   const prev = same[at - 1];
   const next = same[at + 1];
 
   return (
     <div className="reading">
-      <Contents chapters={same} current={id} />
+      <Contents chapters={same} current={id} volumes={volumes} />
       <article className="read">
         <h1>{shell.name}</h1>
         {page ? (

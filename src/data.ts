@@ -13,7 +13,9 @@ export type Shell = {
   links: Link[];
 };
 export type Card = Shell & { body: Record<string, unknown> };
-export type Group = { id: string; name: string; count: number; description?: string; author?: string };
+// 书的分卷：parts 是这一卷的起止章序号（含两端）。
+export type Volume = { title: string; parts: [number, number] };
+export type Group = { id: string; name: string; count: number; description?: string; author?: string; volumes?: Volume[] };
 export type LibId = "mechanism" | "world" | "experience";
 
 export const LIBS: { id: LibId; name: string; intro: string }[] = [

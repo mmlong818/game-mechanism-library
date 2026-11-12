@@ -1,7 +1,13 @@
 {
  "contract_version": "1.0",
- "release": "2026-11-13.1",
- "previous_release": "2026-11-12.1",
+ "release": "2026-11-13.2",
+ "previous_release": "2026-11-13.1",
+ "license": {
+  "content": "CC-BY-NC-ND-4.0",
+  "content_url": "https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh-hans",
+  "attribution": "猫叔",
+  "notice": "署名—非商业性使用—禁止演绎。可以原样转载并注明作者，不得用于商业目的，不得改编。"
+ },
  "collections": [
   {
    "id": "mechanism",
@@ -28,15 +34,15 @@
    "id": "book",
    "name": "书",
    "kind": "articles",
-   "count": 35,
+   "count": 36,
    "schema_version": "1.0"
   }
  ],
  "files": {
-  "collections/book/cards/rpg-seven-volumes.json": "e9c3751e176a176fd33c071554ac6662490ecd6ff9487bebdcc97b2ce61e2d05",
-  "collections/book/changes.json": "f4e512fa674678707ca3a1b4e3c49a7b5b70e52614f409a0a8acff25786ac096",
-  "collections/book/groups.json": "cbae0020ea0863c0b98804ae1a3cd989139f868771afb0cad27b65370a3c3657",
-  "collections/book/index.json": "826f3f746736185495d374db1c7da88e196d9319fa28a7b5d54e04e678dae159",
+  "collections/book/cards/rpg-seven-volumes.json": "fcd537b5fc35a48ffd7988bad1beb6377cf82f24e14a9eb12f2647ea95e1dd69",
+  "collections/book/changes.json": "67f2ed9ccf619a7255341e9c120acfb89e99ed11c226c648f9fec481c5bbf6bf",
+  "collections/book/groups.json": "16122b93de53208c994e48aaeeb17ea4d5437e02738cbb04c18a754266891ecd",
+  "collections/book/index.json": "5d70b17d4ad11f3cc7ed305f2206ad99eda65c910f6f93765976e79632c96be6",
   "collections/book/redirects.json": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
   "collections/experience/cards/belonging-and-bonds.json": "3f713ca5545801162e7f7bcf3954e955e4fc478356b842a2603160114a1d8f88",
   "collections/experience/cards/choice-and-cost.json": "e82e7ec80fceb8b9ccd70327b311e44910a881a312e6d675def29c9faf826a3d",
