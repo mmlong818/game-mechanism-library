@@ -8,7 +8,7 @@
 
 - `public/data/current.json`：当前用哪个发布包，例如 `{"release":"2026-11-12.1"}`。
 - `public/data/release/<发布编号>/`：发布包原样复制进来，不要改里面的文件。
-- `public/covers/`：首页和分组页头部用的像素封面，512×512 的 jpg。文件名是 `<库>-<分组 slug>.jpg`，另有 `section-new.jpg`、`section-needs.jpg`、`section-articles.jpg`、`section-mcp.jpg`。
+- `public/covers/`：首页和分组页头部用的像素封面，512×512 的 jpg。文件名是 `<库>-<分组 slug>.jpg`，另有 `section-needs.jpg`、`section-mcp.jpg`（`section-articles.jpg` 留给以后的专题文章）。
 - `src/`：页面代码。`data.ts` 读发布包，`router.ts` 是 hash 路由，`home.tsx`、`lists.tsx`、`entry.tsx`、`info.tsx` 是各个页面，`needs.json` 是首页“按设计需求找”的六条。
 - `scripts/check-data.mjs`：核对发布包。`scripts/resize-covers.py`：把封面缩到 512×512。`scripts/preview-pages.mjs`：按 GitHub Pages 的子路径预览 `dist`。
 
@@ -53,16 +53,15 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 | 地址 | 页面 |
 |---|---|
 | `#/` | 首页 |
-| `#/c/<库>` | 库的目录，机制库可加 `?tag=具体机制`、`机制家族`、`设计模式`、`new` |
+| `#/c/<库>` | 库的目录，机制库可加 `?tag=具体机制`、`机制家族`、`设计模式` |
 | `#/c/<库>/<分组>` | 分组页 |
 | `#/e/<库>/<id>` | 详情页 |
-| `#/new` | 少见做法列表（带 `new` 标签的机制） |
 | `#/search?q=<词>&c=<库>` | 搜索 |
 | `#/mcp` | 接入 AI 说明 |
 
-旧版的地址（`#community`、`#favorites`、`m_` 开头的卡片 id 等任何不认识的地址）统一回到首页。专题文章还没有内容，`#/articles` 暂时也回首页，等有文章了再加回导航和首页。
+旧版的地址（`#community`、`#favorites`、`m_` 开头的卡片 id 等任何不认识的地址）统一回到首页。专题文章还没有内容，`#/articles` 暂时也回首页，等有文章了再加回导航和首页。旧的 `#/new` 同样回首页。
 
-界面文案是写给访客的：`new` 标签显示为“少见做法”，`thin` 标签不显示，页面上不出现发布编号和卡片 id，页脚只写“更新于某年某月某日”（从发布编号里取日期）。条目按旧 id 访问时会先查发布包里的 `redirects.json`，有去向就跳过去。
+界面文案是写给访客的：发布包里的 `new`、`thin` 标签网站一律忽略，所有机制一视同仁，只显示层级标签；页面上不出现发布编号和卡片 id，页脚只写“更新于某年某月某日”（从发布编号里取日期）。条目按旧 id 访问时会先查发布包里的 `redirects.json`，有去向就跳过去。
 
 ## 不包含的内容
 

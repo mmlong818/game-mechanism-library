@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { LEVELS, libName, tagLabel, type Core, type Shell } from "./data";
+import { LEVELS, libName, type Core, type Shell } from "./data";
 import { href } from "./router";
 
 export function useTitle(title: string) {
@@ -24,18 +24,15 @@ export function Status({ error }: { error?: Error }) {
   );
 }
 
+// 只显示机制库的层级标签；发布包里的其他标签（new、thin）网站不区分。
 export function Tags({ tags }: { tags: string[] }) {
-  const shown = [...tags.filter((t) => LEVELS.includes(t)), ...tags.filter((t) => t === "new")];
+  const shown = tags.filter((t) => LEVELS.includes(t));
   if (!shown.length) return null;
   return (
     <span className="tags">
       {shown.map((t) => (
-        <span
-          key={t}
-          className={`tag ${t === "new" ? "tag-new" : ""}`}
-          title={t === "new" ? "市面上少见的规则，或原创的规则设想" : undefined}
-        >
-          {tagLabel(t)}
+        <span key={t} className="tag">
+          {t}
         </span>
       ))}
     </span>

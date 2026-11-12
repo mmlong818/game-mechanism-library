@@ -43,9 +43,6 @@ export const isLib = (v: string): v is LibId => LIBS.some((l) => l.id === v);
 export const libName = (id: string) => LIBS.find((l) => l.id === id)?.name ?? id;
 
 export const LEVELS = ["具体机制", "机制家族", "设计模式"];
-// 带 new 标签的机制，对访客叫“少见做法”：市面上少见的规则，或原创的规则设想。
-export const RARE = "少见做法";
-export const tagLabel = (t: string) => (t === "new" ? RARE : t);
 
 export type Core = {
   release: string;

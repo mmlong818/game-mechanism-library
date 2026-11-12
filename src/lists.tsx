@@ -1,17 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { LEVELS, LIBS, RARE, cover, loadIndex, useAll, useAsync, type Core, type LibId, type Shell } from "./data";
+import { LEVELS, LIBS, cover, loadIndex, useAll, useAsync, type Core, type LibId, type Shell } from "./data";
 import { goHome, href } from "./router";
 import { Chips, Crumbs, EntryList, PageHead, Status, useTitle } from "./ui";
 
-const MECH_FILTERS = [
-  { value: "", label: "全部" },
-  ...LEVELS.map((l) => ({ value: l, label: l })),
-  { value: "new", label: RARE },
-];
+const MECH_FILTERS = [{ value: "", label: "全部" }, ...LEVELS.map((l) => ({ value: l, label: l }))];
 const cleanTag = (lib: LibId, tag: string) => (lib === "mechanism" && MECH_FILTERS.some((f) => f.value === tag) ? tag : "");
 const match = (e: Shell, tag: string) => !tag || e.tags.includes(tag);
 
-// 库的目录页：分组列表加条数；机制库另有层级和“新机制”筛选。
+// 库的目录页：分组列表加条数；机制库另有层级筛选。
 export function CollectionPage({ core, lib, tag: rawTag }: { core: Core; lib: LibId; tag: string }) {
   const meta = LIBS.find((l) => l.id === lib)!;
   const tag = cleanTag(lib, rawTag);
@@ -43,7 +39,7 @@ export function CollectionPage({ core, lib, tag: rawTag }: { core: Core; lib: Li
             options={MECH_FILTERS.map((f) => ({ ...f, count: tagCount(f.value) }))}
           />
           <p className="hint">
-            具体机制是一条可以直接照做的规则；机制家族是同一思路下的一组做法；设计模式由几条机制组合而成。{RARE}是市面上很少见到的规则，或者原创的规则设想。
+            具体机制是一条可以直接照做的规则；机制家族是同一思路下的一组做法；设计模式由几条机制组合而成。
           </p>
         </>
       )}
@@ -133,55 +129,6 @@ export function GroupPage({ core, lib, group, tag: rawTag }: { core: Core; lib: 
       ) : (
         <p className="status">没有符合的卡片。换个词或换一个筛选看看。</p>
       )}
-    </>
-  );
-}
-
-// 少见做法列表：带 new 标签的机制，按主题分段。
-export function NewPage({ core }: { core: Core }) {
-  useTitle(RARE);
-  const { data: index, error } = useAsync(() => loadIndex("mechanism"), []);
-  const fresh = index?.filter((e) => e.tags.includes("new")) ?? [];
-  const sections = core.groups.mechanism
-    .map((g) => ({ g, items: fresh.filter((e) => e.group === g.id) }))
-    .filter((s) => s.items.length)
-    .sort((a, b) => b.items.length - a.items.length);
-  return (
-    <>
-      <Crumbs items={[{ label: "机制", to: href.collection("mechanism") }, { label: RARE }]} />
-      <PageHead
-        title={RARE}
-        img={cover("section-new")}
-        lead={
-          index
-            ? `${fresh.length} 张机制卡片，分在 ${sections.length} 个主题里。有的是市面上很少见到的规则，只在个别游戏里出现过；有的是原创的规则设想。想找没见过的点子，从这里翻。`
-            : "市面上很少见到的规则，以及原创的规则设想。"
-        }
-      />
-      {!index && <Status error={error} />}
-      {sections.length > 0 && (
-        <nav className="jump" aria-label="按主题跳转">
-          {sections.map((s) => (
-            <button
-              key={s.g.id}
-              type="button"
-              onClick={() => document.getElementById(`new-${s.g.id}`)?.scrollIntoView({ block: "start" })}
-            >
-              {s.g.name}
-              <i>{s.items.length}</i>
-            </button>
-          ))}
-        </nav>
-      )}
-      {sections.map((s) => (
-        <section key={s.g.id} id={`new-${s.g.id}`} className="lsec">
-          <h2>
-            <a href={href.group("mechanism", s.g.id, "new")}>{s.g.name}</a>
-            <i className="num">{s.items.length} 张</i>
-          </h2>
-          <EntryList items={s.items} core={core} />
-        </section>
-      ))}
     </>
   );
 }

@@ -1,16 +1,7 @@
-import { LIBS, RARE, cover, useAll, type Core, type Group, type LibId, type Shell } from "./data";
+import { LIBS, cover, useAll, type Core, type Group, type LibId } from "./data";
 import { href } from "./router";
 import { useTitle } from "./ui";
 import needs from "./needs.json";
-
-const RARE_PICKS = [
-  "失败后各人添加不可推翻的事实",
-  "把照片取景放进世界成为实体空间",
-  "连续否决累积至强制结算",
-  "所选收益越高下轮选择顺位越靠后",
-  "能量在三个碗之间单向循环才可花费",
-  "前局构筑化作下一局的对手",
-];
 
 const byCount = (groups: Group[]) => [...groups].sort((a, b) => b.count - a.count);
 
@@ -33,22 +24,10 @@ function CoverWall({ lib, groups }: { lib: LibId; groups: Group[] }) {
   );
 }
 
-function pickRare(list: Shell[]): Shell[] {
-  const rare = list.filter((e) => e.tags.includes("new"));
-  const picks = RARE_PICKS.map((n) => rare.find((e) => e.name === n)).filter((e): e is Shell => !!e);
-  for (const e of rare) {
-    if (picks.length >= 6) break;
-    if (!picks.includes(e) && !picks.some((p) => p.group === e.group)) picks.push(e);
-  }
-  return picks.slice(0, 6);
-}
-
 export function Home({ core }: { core: Core }) {
   useTitle("");
   const all = useAll().data;
   const mech = byCount(core.groups.mechanism);
-  const rareCount = all ? all.byLib.mechanism.filter((e) => e.tags.includes("new")).length : undefined;
-  const rarePicks = all ? pickRare(all.byLib.mechanism) : [];
   const leadCover: Record<LibId, string> = {
     mechanism: byCount(core.groups.mechanism)[0]?.id ?? "",
     world: byCount(core.groups.world)[0]?.id ?? "",
@@ -70,9 +49,8 @@ export function Home({ core }: { core: Core }) {
           <a className="btn pri" href={href.collection("mechanism")}>
             从机制库看起 →
           </a>
-          <a className="btn" href={href.rare}>
-            看{rareCount ? ` ${rareCount} 种` : ""}
-            {RARE}
+          <a className="btn" href={href.search("")}>
+            直接搜卡片
           </a>
         </div>
       </section>
@@ -143,29 +121,6 @@ export function Home({ core }: { core: Core }) {
       </section>
 
       <section className="sec">
-        <div className="camp">
-          <div className="camp-side">
-            <img className="px" src={cover("section-new")} alt="" width={512} height={512} loading="lazy" />
-            <div className="n num">{rareCount ?? "…"}</div>
-            <h2>种{RARE}</h2>
-            <p>市面上很少见到的规则，以及原创的规则设想。想找没见过的点子，从这里翻。</p>
-            <a className="btn" href={href.rare}>
-              看全部{RARE} →
-            </a>
-          </div>
-          <div className="nlist">
-            {rarePicks.map((e) => (
-              <a key={e.id} href={href.entry(e.id)}>
-                <i>{core.groupName(e.collection, e.group)}</i>
-                <b>{e.name}</b>
-                <span>{e.summary}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="sec">
         <div className="shd with-img">
           <img className="px" src={cover("section-needs")} alt="" width={512} height={512} loading="lazy" />
           <h2>从你想解决的问题找起</h2>
@@ -182,7 +137,6 @@ export function Home({ core }: { core: Core }) {
                 <div className="to">
                   <b>{e?.name ?? "…"}</b>
                   {e && core.groupName(e.collection, e.group)}
-                  {e?.tags.includes("new") && ` · ${RARE}`}
                 </div>
               </a>
             );

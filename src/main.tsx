@@ -1,11 +1,11 @@
 import { StrictMode, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import "./globals.css";
-import { LIBS, RARE, useCore, type Core } from "./data";
+import { LIBS, useCore, type Core } from "./data";
 import { EntryPage } from "./entry";
 import { Home } from "./home";
 import { McpPage } from "./info";
-import { CollectionPage, GroupPage, NewPage, SearchPage } from "./lists";
+import { CollectionPage, GroupPage, SearchPage } from "./lists";
 import { goHome, href, replaceHash, useRoute, type Route } from "./router";
 import { Status } from "./ui";
 
@@ -102,9 +102,6 @@ function Footer({ core }: { core?: Core }) {
           <h3>找卡片</h3>
           <ul>
             <li>
-              <a href={href.rare}>{RARE}</a>
-            </li>
-            <li>
               <a href={href.search("")}>搜索</a>
             </li>
           </ul>
@@ -132,8 +129,6 @@ function Page({ route, core }: { route: Route; core: Core }) {
       return <GroupPage core={core} lib={route.lib} group={route.group} tag={route.tag} />;
     case "entry":
       return <EntryPage core={core} lib={route.lib} id={route.id} />;
-    case "new":
-      return <NewPage core={core} />;
     case "search":
       return <SearchPage core={core} q={route.q} c={route.c} />;
     case "mcp":

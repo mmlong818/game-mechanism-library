@@ -369,7 +369,6 @@ export function EntryPage({ core, lib, id }: { core: Core; lib: LibId; id: strin
   const meta = LIBS.find((l) => l.id === lib)!;
   const card = cards?.find((c) => c.id === id);
   const rows = card ? buildRows(card, all) : [];
-  const origin = card ? S(card.body.origin) : "";
   const boundary = card ? S(card.body.boundary) : "";
   const jump = (key: string) => document.getElementById(`row-${key}`)?.scrollIntoView({ block: "start" });
 
@@ -387,7 +386,6 @@ export function EntryPage({ core, lib, id }: { core: Core; lib: LibId; id: strin
             <div className="meta">
               <span className="tag">{meta.name}</span>
               <Tags tags={shell.tags} />
-              {origin === "写卡时提出" && <span className="origin">原创设想</span>}
             </div>
             <h1>{shell.name}</h1>
             <dl className="lead">

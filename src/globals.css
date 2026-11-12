@@ -1,4 +1,4 @@
-/* 外壳只用黑白灰；颜色留给像素封面和“新机制”那一块色板。 */
+/* 外壳只用黑白灰；颜色留给像素封面。 */
 :root {
   --canvas: #ffffff;
   --plate: #f3f4f6;
@@ -409,78 +409,6 @@ pre {
   color: var(--ink-3);
 }
 
-/* 新机制色板 */
-.camp {
-  background: var(--c-cobalt);
-  color: var(--c-cobalt-ink);
-  border-radius: 28px;
-  padding: 36px;
-  display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-  gap: 36px;
-  align-items: center;
-}
-.camp-side img {
-  width: 120px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-.camp .n {
-  font-weight: 700;
-  font-size: clamp(80px, 12vw, 150px);
-  line-height: 0.82;
-  letter-spacing: -0.05em;
-}
-.camp h2 {
-  font-size: 30px;
-  font-weight: 900;
-  margin-top: 14px;
-}
-.camp p {
-  margin: 10px 0 18px;
-  opacity: 0.9;
-  max-width: 26em;
-}
-.camp .btn {
-  background: #ffffff;
-  color: #1b37b8;
-}
-.camp :focus-visible {
-  outline-color: #ffffff;
-}
-.nlist {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.nlist a {
-  background: var(--canvas);
-  color: var(--ink);
-  border-radius: 14px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-.nlist b {
-  font-family: var(--head);
-  font-size: 15.5px;
-  line-height: 1.4;
-}
-.nlist span {
-  font-size: 13px;
-  color: var(--ink-2);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.nlist i {
-  font-size: 12px;
-  color: var(--ink-3);
-}
-
 /* 按需求找 */
 .needs {
   display: grid;
@@ -712,11 +640,6 @@ pre {
   white-space: nowrap;
   font-weight: 400;
   font-family: var(--sans);
-}
-.tag-new {
-  background: var(--c-cobalt);
-  color: var(--c-cobalt-ink);
-  box-shadow: none;
 }
 .tags {
   display: inline-flex;
@@ -1259,10 +1182,6 @@ pre {
   .covers {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .camp {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 28px 22px;
-  }
   .needs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1296,7 +1215,6 @@ pre {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px 12px;
   }
-  .nlist,
   .needs,
   .ways {
     grid-template-columns: minmax(0, 1fr);
