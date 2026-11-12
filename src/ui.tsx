@@ -4,7 +4,7 @@ import { href } from "./router";
 
 export function useTitle(title: string) {
   useEffect(() => {
-    document.title = title ? `${title} · 游戏设计资料库` : "游戏设计资料库";
+    document.title = title ? `${title} · 猫叔的游戏知识库` : "猫叔的游戏知识库";
   }, [title]);
 }
 

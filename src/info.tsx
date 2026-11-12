@@ -101,7 +101,7 @@ export function McpPage() {
           </section>
         </div>
         {open ? (
-          <p>接好以后，可以先问 AI 一句“游戏设计资料库里有哪几个库”，它答得出各库的卡片数量，就说明接通了。</p>
+          <p>接好以后，可以先问 AI 一句“猫叔的游戏知识库里有哪几个库”，它答得出各库的卡片数量，就说明接通了。</p>
         ) : (
           <p>开放以后，具体的接法会写在这一页。</p>
         )}
@@ -125,7 +125,9 @@ function Contact({ value }: { value: string }) {
 
 export function LicensePage() {
   useTitle("版权");
-  const contact = useConfig()?.contact ?? "";
+  const cfg = useConfig();
+  const contact = cfg?.contact ?? "";
+  const repoUrl = cfg?.repoUrl ?? "";
   return (
     <>
       <header className="phead">
@@ -153,10 +155,18 @@ export function LicensePage() {
         </ul>
 
         <h2>想商用或改编</h2>
-        <p>
-          请联系作者{contact ? "：" : "。"}
-          {contact && <Contact value={contact} />}
-        </p>
+        {contact ? (
+          <p>
+            请联系作者：
+            <Contact value={contact} />
+          </p>
+        ) : repoUrl ? (
+          <p>
+            请到 <a href={`${repoUrl}/issues`}>GitHub 仓库</a>提 issue 联系作者。
+          </p>
+        ) : (
+          <p>请联系作者。</p>
+        )}
 
         <h2>协议</h2>
         <p>

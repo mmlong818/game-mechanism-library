@@ -2,6 +2,7 @@ import { StrictMode, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import "./globals.css";
 import { BookPage, ChapterPage } from "./book";
+import { useConfig } from "./config";
 import { BOOK_NAME, LIBS, useCore, type Core } from "./data";
 import { BrowsePage, EntryRedirect } from "./browse";
 import { LicensePage, McpPage } from "./info";
@@ -13,6 +14,8 @@ import { Status } from "./ui";
 // 库里只有一本书时，书这一项直接显示书名；有多本时显示“书”，进书单。
 function Header({ route, core }: { route: Route; core?: Core }) {
   const input = useRef<HTMLInputElement>(null);
+  // 仓库地址来自 site-config.json；还没读到配置时先不显示，读到后留空也不显示。
+  const repoUrl = useConfig()?.repoUrl ?? "";
   const searchQ = route.name === "search" ? route.q : null;
   const searchC = route.name === "search" ? route.c : "";
   // 从别处进入搜索页（比如点了示例词）时，把搜索框同步成地址里的词。
@@ -50,7 +53,7 @@ function Header({ route, core }: { route: Route; core?: Core }) {
           <b />
           <b />
         </i>
-        游戏设计资料库
+        猫叔的游戏知识库
       </a>
       <nav aria-label="主导航">
         {LIBS.map((l) => (
@@ -77,9 +80,16 @@ function Header({ route, core }: { route: Route; core?: Core }) {
       >
         <input ref={input} type="search" placeholder="搜卡片和书" aria-label="搜索卡片和书" onChange={(e) => type(e.target.value)} />
       </form>
-      <a className="lic" href={href.license} aria-current={current(route.name === "license")}>
-        版权
-      </a>
+      <span className="lic">
+        <a href={href.license} aria-current={current(route.name === "license")}>
+          版权
+        </a>
+        {repoUrl && (
+          <a href={repoUrl} target="_blank" rel="noopener noreferrer">
+            GitHub
+          </a>
+        )}
+      </span>
     </header>
     </div>
   );
@@ -128,7 +138,7 @@ function App() {
         跳到正文
       </button>
       <Header route={route} core={core} />
-      <main id="main" className={`in page${fill ? " fill" : ""}`} tabIndex={-1}>
+      <main id="main" className={route.name === "chapter" ? "bookpage" : `in page${fill ? " fill" : ""}`} tabIndex={-1}>
         {core ? <Page route={route} core={core} /> : <Status error={error} />}
       </main>
       {foot && <footer className="in foot">猫叔{core?.updated ? ` · 更新于 ${core.updated}` : ""}</footer>}

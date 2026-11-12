@@ -1,4 +1,4 @@
-# 游戏设计资料库（网站）
+# 猫叔的游戏知识库（网站）
 
 猫叔整理的游戏设计卡片站，纯静态，部署在 GitHub Pages。技术栈是 Vite + React + TypeScript，没有后端。
 
@@ -10,7 +10,7 @@
 - `public/data/release/<发布编号>/`：发布包原样复制进来，不要改里面的文件。
 - `public/covers/`：卡片库左栏分组名前面的像素封面缩略图，512×512 的 jpg，每个分组一张，文件名是 `<库>-<分组 slug>.jpg`。
 - `public/site-config.json`：站点配置，部署后可以直接改，不用重新构建（见下面“站点配置”一节）。
-- `src/`：页面代码。`config.ts` 读站点配置，`data.ts` 读发布包，`router.ts` 是 hash 路由，`browse.tsx` 是卡片库的三栏界面，`entry.tsx` 是其中右栏的卡片全文，`lists.tsx` 是搜索，`book.tsx` 是书的三栏阅读界面，`info.tsx` 是接入 AI 说明和版权页。
+- `src/`：页面代码。`config.ts` 读站点配置，`data.ts` 读发布包，`router.ts` 是 hash 路由，`browse.tsx` 是卡片库的三栏界面，`entry.tsx` 是其中右栏的卡片全文，`lists.tsx` 是搜索，`book.tsx` 是书的阅读界面，`info.tsx` 是接入 AI 说明和版权页，`book.css` 是书的版式。
 - `scripts/check-data.mjs`：核对发布包。`scripts/resize-covers.py`：把封面缩到 512×512。`scripts/preview-pages.mjs`：按 GitHub Pages 的子路径预览 `dist`。
 
 ## 本地构建
@@ -34,7 +34,7 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 
 ## 站点配置
 
-`site-config.json` 放在站点根目录（源码里是 `public/site-config.json`），页面每次打开时读取。四个字段都可以留空；文件缺失或格式不对时页面按全部留空处理，不会出错。
+`site-config.json` 放在站点根目录（源码里是 `public/site-config.json`），页面每次打开时读取。各字段都可以留空；文件缺失或格式不对时页面按全部留空处理，不会出错。
 
 | 字段 | 作用 |
 |---|---|
@@ -42,6 +42,7 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 | `mcp_name` | 在 AI 工具里给这个服务起的名字，默认 `game-design-library` |
 | `local_download_url` | 本地安装版的下载地址。填了，“接入 AI”页就给出本地安装的步骤；没填显示“即将开放” |
 | `contact` | 作者的联系方式（邮箱、网址或一句话）。填了，“版权”页的“请联系作者”后面带上它 |
+| `repo_url` | 项目的 GitHub 仓库地址，默认 `https://github.com/mmlong818/game-mechanism-library`。有值时顶栏最右侧显示“GitHub”；没填 `contact` 时版权页引导到这个仓库提 issue。写成空字符串就都不显示 |
 
 ## 授权
 
@@ -70,8 +71,8 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 | `#/c/<库>/<分组>/<卡片>` | 卡片库的三栏界面，定位到这张卡。库是 `mechanism`、`world`、`experience` |
 | `#/`、`#/c/<库>`、`#/c/<库>/<分组>` | 补全成上面的正式地址：没写的部分取第一个分组、第一张卡 |
 | `#/e/<库>/<id>` | 旧的详情页地址，换成这张卡的三栏地址 |
-| `#/c/book` | 书。库里只有一本书时跳到这本书的第 1 章；有多本时是书单，`#/c/book/<书>` 跳到那本书的第 1 章 |
-| `#/e/book/<id>` | 章节阅读页（三栏） |
+| `#/c/book` | 书。库里只有一本书时跳到这本书的第一篇（前言）；有多本时是书单，`#/c/book/<书>` 跳到那本书的第一篇 |
+| `#/e/book/<id>` | 章节阅读页（左侧栏加正文） |
 | `#/search?q=<词>&c=<库>` | 搜索 |
 | `#/mcp` | 接入 AI 说明 |
 | `#/license` | 版权。入口只有顶栏最右侧的小字“版权” |
@@ -100,13 +101,13 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 
 书在发布包里是 `kind` 为 `articles` 的库（`collections/book/`）：分组是一本书，条目是一章，`body.text` 是整章的 markdown。书没有封面图，页面上不放图。库里只有一本书时，导航里书这一项直接显示书名；有多本时显示“书”并进书单。
 
-顶栏固定在视口顶部。它的实际高度由 `main.tsx` 写进 CSS 变量 `--top`，固定在视口内的侧栏和标题的停靠位置都按这个变量让出空间。宽度不到 860 时顶栏排成两行：站名和搜索框一行，导航一行。
+顶栏固定在视口顶部。它的实际高度由 `main.tsx` 写进 CSS 变量 `--top`，固定在视口内的侧栏和标题的停靠位置都按这个变量让出空间。宽度不到 860 时顶栏排成两行：站名、搜索框和“版权”“GitHub”一行，导航一行。
 
-阅读界面分三栏：左栏是全书目录（当前章高亮，栏内单独滚动），中栏是正文，右栏是本章的二、三级标题（随滚动标出当前小节）；左右两栏固定在视口内。全站内容区最宽 1560px；书的左栏 280px、右栏 240px，中栏占其余空间。宽度不到 1240 时收起右栏，不到 900 时目录收成正文上方可展开的“目录”按钮。
+阅读界面是“左侧栏加单栏正文”，版式沿用作者自己那本书的单页版，样式都在 `src/book.css`，只作用于书页：衬线正文（Noto Serif SC）、绛红色强调、浅纸色侧栏。左侧栏宽 264px，固定在顶栏下方、栏内单独滚动，按卷分组，每卷可以折叠（默认全部展开），当前章高亮；前言在最上面，附录在最下面单列一组，栏底是版权行。正文最宽 760px，居中。全书第一篇（前言）上方是书名页（书名、简介、作者，取自发布包），每卷第一章上方是卷名。页尾是上一章、下一章。宽度不到 960 时侧栏回到正文上方，收成可展开的“目录”按钮。深色模式下书页用一套对应的深色值。书页用的字体只在进了书页才从 Google Fonts 加载。
 
-章节正文用 `marked` 转成 HTML。正文里的 HTML 一律当普通文字显示，链接只保留 http、https 和 mailto，所以书稿里即使混进了标签也不会被执行。正文一行最多 48 个汉字；表格放不下时可以横向滚动；代码块里用制表符画的框图靠 `globals.css` 里几条 `@font-face` 把本机等宽字体的西文缩到半个汉字宽来对齐。
+章节正文用 `marked` 转成 HTML。正文里的 HTML 一律当普通文字显示，链接只保留 http、https 和 mailto，所以书稿里即使混进了标签也不会被执行。表格放不下时可以横向滚动；代码块里用制表符画的框图靠 `globals.css` 里几条 `@font-face` 把本机等宽字体的西文缩到半个汉字宽来对齐。
 
-搜索按章节标题、开头一段和书名查，结果里标出所属的书。
+搜索按章节标题、开头一段、书名和正文全文查，结果里标出所属的书。
 
 ## 不包含的内容
 
