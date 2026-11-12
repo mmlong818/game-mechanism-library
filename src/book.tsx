@@ -1,12 +1,12 @@
-// 书：目录页和章节阅读页。发布包里书是 kind 为 articles 的库，分组是一本书，条目是一章。
-// 库里只有一本书时，#/c/book 直接是这本书的目录，不再隔一层书单。
-import { useEffect, useMemo } from "react";
+// 书：三栏阅读界面。左栏是全书目录，中栏是正文，右栏是本章小节。
+// 发布包里书是 kind 为 articles 的库，分组是一本书，条目是一章。
+// 导航“书”（#/c/book）在库里只有一本书时直接打开这本书的第 1 章；有多本时才是书单。
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Marked, type Tokens } from "marked";
 import { BOOK, BOOK_NAME, loadChapters, loadGroupCards, useAsync, type Core, type Group, type Shell } from "./data";
 import { goHome, href, replaceHash } from "./router";
 import { Status, useTitle } from "./ui";
 
-const bookHref = (core: Core, slug: string) => (core.books.length > 1 ? href.book(slug) : href.book());
 const isAppendix = (e: Shell) => e.tags.some((t) => /^part:\D/.test(t));
 
 function BookList({ books }: { books: Group[] }) {
@@ -33,77 +33,26 @@ function BookList({ books }: { books: Group[] }) {
   );
 }
 
-function ChapterList({ items }: { items: Shell[] }) {
-  return (
-    <ol className="elist chapters">
-      {items.map((e) => (
-        <li key={e.id}>
-          <a href={href.entry(e.id)}>
-            <b>{e.name}</b>
-          </a>
-          <p>{e.summary}</p>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-function BookToc({ core, book }: { core: Core; book: Group }) {
-  useTitle(book.name);
-  const { data: chapters, error } = useAsync(loadChapters, []);
-  const mine = chapters?.filter((e) => e.group === book.id) ?? [];
-  const main = mine.filter((e) => !isAppendix(e));
-  const appendix = mine.filter(isAppendix);
-  return (
-    <>
-      {core.books.length > 1 && (
-        <nav className="crumbs" aria-label="所在位置">
-          <a href={href.book()}>{BOOK_NAME}</a>
-        </nav>
-      )}
-      <header className="phead">
-        <div>
-          <h1>{book.name}</h1>
-          {book.author && <p className="byline">{book.author} 著</p>}
-          {book.description && <p>{book.description}</p>}
-        </div>
-      </header>
-      {!chapters ? (
-        <Status error={error} />
-      ) : (
-        <>
-          <ChapterList items={main} />
-          {appendix.length > 0 && (
-            <>
-              <h2 className="chapters-sub">附录</h2>
-              <ChapterList items={appendix} />
-            </>
-          )}
-        </>
-      )}
-    </>
-  );
-}
-
-// #/c/book 和 #/c/book/<书>。只有一本书时两者都落到这本书的目录，地址统一成 #/c/book。
+// #/c/book 和 #/c/book/<书>：落到那本书的第 1 章。库里有多本书而地址没指明哪一本时，显示书单。
 export function BookPage({ core, slug }: { core: Core; slug: string }) {
-  const single = core.books.length === 1;
-  const book = single ? core.books[0] : core.books.find((b) => b.id === slug);
+  const book = core.books.length === 1 && !slug ? core.books[0] : core.books.find((b) => b.id === slug);
   const bad = !core.books.length || (slug !== "" && !book);
+  const { data: chapters, error } = useAsync(loadChapters, []);
+  const first = book && chapters?.find((e) => e.group === book.id);
   useEffect(() => {
-    if (bad) goHome();
-    else if (single && slug) replaceHash(href.book());
-  }, [bad, single, slug]);
+    if (bad || (book && chapters && !first)) goHome();
+    else if (first) replaceHash(href.entry(first.id));
+  }, [bad, book, chapters, first]);
   if (bad) return null;
   if (!book) return <BookList books={core.books} />;
-  return <BookToc core={core} book={book} />;
+  return <Status error={error} />;
 }
 
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 const safeUrl = (u: string) => /^(https?:|mailto:)/i.test(u.trim());
 
-type Section = { id: string; text: string };
+type Section = { id: string; text: string; depth: number };
 
 // 把一章的 markdown 转成 HTML。正文里的 HTML 一律当普通文字显示，不会被执行；
 // 链接只留 http、https 和 mailto，其余只显示文字；图片只留 http、https。
@@ -117,10 +66,10 @@ function render(source: string): { html: string; sections: Section[] } {
       },
       heading({ tokens, depth }: Tokens.Heading) {
         const inner = this.parser.parseInline(tokens);
-        if (depth !== 2) return `<h${depth}>${inner}</h${depth}>\n`;
+        if (depth !== 2 && depth !== 3) return `<h${depth}>${inner}</h${depth}>\n`;
         const id = `sec-${sections.length + 1}`;
-        sections.push({ id, text: this.parser.parseInline(tokens, this.parser.textRenderer) });
-        return `<h2 id="${id}">${inner}</h2>\n`;
+        sections.push({ id, depth, text: this.parser.parseInline(tokens, this.parser.textRenderer) });
+        return `<h${depth} id="${id}">${inner}</h${depth}>\n`;
       },
       link({ href: to, tokens }: Tokens.Link) {
         const inner = this.parser.parseInline(tokens);
@@ -139,11 +88,107 @@ function render(source: string): { html: string; sections: Section[] } {
   return { html, sections };
 }
 
-// 章节阅读页：页头是书名（回目录）和章节标题，正文，页尾是上一章、下一章。
+// 左栏：书名、简介和全书目录。宽屏固定在视口内、栏内滚动；窄屏收成正文上方的“目录”按钮。
+function Contents({ book, chapters, current }: { book?: Group; chapters: Shell[]; current: string }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLElement>(null);
+  useEffect(() => {
+    setOpen(false);
+    // 把当前章滚到栏内可见的位置，只动这一栏，不动页面。
+    const el = box.current;
+    const now = el?.querySelector<HTMLElement>("[aria-current]");
+    if (el && now && el.scrollHeight > el.clientHeight) {
+      const delta = now.getBoundingClientRect().top - el.getBoundingClientRect().top;
+      el.scrollTop += delta - el.clientHeight / 2 + now.offsetHeight / 2;
+    }
+  }, [current]);
+  const list = (items: Shell[]) => (
+    <ol>
+      {items.map((e) => (
+        <li key={e.id}>
+          <a href={href.entry(e.id)} aria-current={e.id === current ? "page" : undefined}>
+            {e.name}
+          </a>
+        </li>
+      ))}
+    </ol>
+  );
+  const appendix = chapters.filter(isAppendix);
+  return (
+    <nav ref={box} className={`contents${open ? " open" : ""}`} aria-label="全书目录">
+      <button type="button" className="contents-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
+        目录
+        <i aria-hidden="true">{open ? "收起" : "展开"}</i>
+      </button>
+      <div className="contents-body">
+        {book && (
+          <div className="contents-book">
+            <b>{book.name}</b>
+            {book.author && <i>{book.author} 著</i>}
+            {book.description && <p>{book.description}</p>}
+          </div>
+        )}
+        {list(chapters.filter((e) => !isAppendix(e)))}
+        {appendix.length > 0 && (
+          <>
+            <div className="contents-sub">附录</div>
+            {list(appendix)}
+          </>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+// 右栏：本章的二、三级标题，随滚动标出当前所在的小节。
+function Sections({ sections }: { sections: Section[] }) {
+  const [active, setActive] = useState("");
+  const box = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const spy = () => {
+      let now = "";
+      for (const s of sections) {
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top <= 96) now = s.id;
+      }
+      setActive(now);
+    };
+    spy();
+    window.addEventListener("scroll", spy, { passive: true });
+    return () => window.removeEventListener("scroll", spy);
+  }, [sections]);
+  // 小节多、右栏自己要滚动时，让当前小节保持在栏内可见。
+  useEffect(() => {
+    const el = box.current;
+    const now = el?.querySelector<HTMLElement>("[aria-current]");
+    if (el && now && el.scrollHeight > el.clientHeight) {
+      const delta = now.getBoundingClientRect().top - el.getBoundingClientRect().top;
+      if (delta < 40 || delta > el.clientHeight - 60) el.scrollTop += delta - el.clientHeight / 2;
+    }
+  }, [active]);
+  const jump = (id: string) => document.getElementById(id)?.scrollIntoView({ block: "start" });
+  return (
+    <nav ref={box} className="toc sections" aria-label="本章小节">
+      <div>本章小节</div>
+      {sections.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          className={s.depth === 3 ? "sub" : undefined}
+          aria-current={s.id === active ? "true" : undefined}
+          onClick={() => jump(s.id)}
+        >
+          {s.text}
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+// 章节阅读页（#/e/book/<id>）。
 export function ChapterPage({ core, id }: { core: Core; id: string }) {
   const { data: chapters, error } = useAsync(loadChapters, []);
-  const index = chapters?.findIndex((e) => e.id === id) ?? -1;
-  const shell = index >= 0 ? chapters![index] : undefined;
+  const shell = chapters?.find((e) => e.id === id);
   useEffect(() => {
     if (chapters && !shell) goHome();
   }, [chapters, shell]);
@@ -161,17 +206,12 @@ export function ChapterPage({ core, id }: { core: Core; id: string }) {
   const at = same.findIndex((e) => e.id === id);
   const prev = same[at - 1];
   const next = same[at + 1];
-  const jump = (sec: string) => document.getElementById(sec)?.scrollIntoView({ block: "start" });
 
   return (
     <div className="reading">
+      <Contents book={core.books.find((b) => b.id === shell.group)} chapters={same} current={id} />
       <article className="read">
-        <header className="read-head">
-          <a className="read-book" href={bookHref(core, shell.group)}>
-            {core.groupName(BOOK, shell.group)}
-          </a>
-          <h1>{shell.name}</h1>
-        </header>
+        <h1>{shell.name}</h1>
         {page ? (
           <div className="md" dangerouslySetInnerHTML={{ __html: page.html }} />
         ) : (
@@ -194,16 +234,7 @@ export function ChapterPage({ core, id }: { core: Core; id: string }) {
           )}
         </nav>
       </article>
-      {page && page.sections.length > 1 && (
-        <nav className="toc" aria-label="本章小节">
-          <div>本章小节</div>
-          {page.sections.map((s) => (
-            <button key={s.id} type="button" onClick={() => jump(s.id)}>
-              {s.text}
-            </button>
-          ))}
-        </nav>
-      )}
+      {page && page.sections.length > 1 && <Sections sections={page.sections} />}
     </div>
   );
 }

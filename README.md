@@ -9,7 +9,7 @@
 - `public/data/current.json`：当前用哪个发布包，例如 `{"release":"2026-11-13.1"}`。
 - `public/data/release/<发布编号>/`：发布包原样复制进来，不要改里面的文件。
 - `public/covers/`：封面墙和分组页头部用的像素封面，512×512 的 jpg，每个分组一张，文件名是 `<库>-<分组 slug>.jpg`。
-- `src/`：页面代码。`data.ts` 读发布包，`router.ts` 是 hash 路由，`lists.tsx` 是封面墙页、分组页和搜索，`entry.tsx` 是详情页，`book.tsx` 是书的目录页和章节阅读页，`info.tsx` 是接入 AI 说明。
+- `src/`：页面代码。`data.ts` 读发布包，`router.ts` 是 hash 路由，`lists.tsx` 是封面墙页、分组页和搜索，`entry.tsx` 是详情页，`book.tsx` 是书的三栏阅读界面，`info.tsx` 是接入 AI 说明。
 - `scripts/check-data.mjs`：核对发布包。`scripts/resize-covers.py`：把封面缩到 512×512。`scripts/preview-pages.mjs`：按 GitHub Pages 的子路径预览 `dist`。
 
 ## 本地构建
@@ -55,12 +55,12 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 | `#/c/world`、`#/c/experience` | 世界观、体验的分组封面墙 |
 | `#/c/<库>/<分组>` | 分组页，机制可加 `?tag=具体机制`、`机制家族`、`设计模式` |
 | `#/e/<库>/<id>` | 详情页 |
-| `#/c/book` | 书。库里只有一本书时，这里就是这本书的目录；有多本时是书单，`#/c/book/<书>` 是各书的目录 |
-| `#/e/book/<id>` | 章节阅读页 |
+| `#/c/book` | 书。库里只有一本书时跳到这本书的第 1 章；有多本时是书单，`#/c/book/<书>` 跳到那本书的第 1 章 |
+| `#/e/book/<id>` | 章节阅读页（三栏） |
 | `#/search?q=<词>&c=<库>` | 搜索 |
 | `#/mcp` | 接入 AI 说明 |
 
-每个页面只有一条浏览路径：导航进库的封面墙，封面墙进分组页，分组页进详情页。书从导航进目录，目录进章节，章节页尾有上一章、下一章。接入 AI 只从导航进。页脚不放链接。
+每个页面只有一条浏览路径：导航进库的封面墙，封面墙进分组页，分组页进详情页。书从导航直接进阅读界面，左栏是全书目录，页尾有上一章、下一章；没有单独的目录页。接入 AI 只从导航进。页脚不放链接。
 
 旧版的地址（`#community`、`#favorites`、`m_` 开头的卡片 id 等任何不认识的地址）统一回到首页。专题文章还没有内容，`#/articles` 暂时也回首页，等有文章了再加回导航和首页。旧的 `#/new` 同样回首页。
 
@@ -69,6 +69,8 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 ## 书
 
 书在发布包里是 `kind` 为 `articles` 的库（`collections/book/`）：分组是一本书，条目是一章，`body.text` 是整章的 markdown。书没有封面图，页面上不放图。
+
+阅读界面分三栏：左栏是书名、简介和全书目录（当前章高亮，栏内单独滚动），中栏是正文，右栏是本章的二、三级标题（随滚动标出当前小节）；左右两栏固定在视口内。宽度不到 1180 时收起右栏，不到 900 时目录收成正文上方可展开的“目录”按钮。
 
 章节正文用 `marked` 转成 HTML。正文里的 HTML 一律当普通文字显示，链接只保留 http、https 和 mailto，所以书稿里即使混进了标签也不会被执行。正文一行约 38 个汉字；表格放不下时可以横向滚动；代码块里用制表符画的框图靠 `globals.css` 里几条 `@font-face` 把本机等宽字体的西文缩到半个汉字宽来对齐。
 
