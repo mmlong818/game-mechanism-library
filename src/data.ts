@@ -16,28 +16,10 @@ export type Card = Shell & { body: Record<string, unknown> };
 export type Group = { id: string; name: string; count: number };
 export type LibId = "mechanism" | "world" | "experience";
 
-export const LIBS: { id: LibId; name: string; unit: string; blurb: string; groupWord: string }[] = [
-  {
-    id: "mechanism",
-    name: "机制",
-    unit: "张",
-    blurb: "规则层面的做法：一条规则怎么运转，玩家因此要做什么决定。",
-    groupWord: "主题",
-  },
-  {
-    id: "world",
-    name: "世界观",
-    unit: "张",
-    blurb: "一个世界靠什么前提成立，这个前提给住在里面的人带来什么处境。",
-    groupWord: "组",
-  },
-  {
-    id: "experience",
-    name: "体验",
-    unit: "张",
-    blurb: "玩家在某一刻感受到什么，这种感受是由什么情境引起的。",
-    groupWord: "组",
-  },
+export const LIBS: { id: LibId; name: string; intro: string }[] = [
+  { id: "mechanism", name: "机制", intro: "一条规则怎么运转，玩家因此要做什么决定。按主题浏览。" },
+  { id: "world", name: "世界观", intro: "一个世界靠什么前提成立，这个前提给住在里面的人带来什么处境。按分组浏览。" },
+  { id: "experience", name: "体验", intro: "玩家在某一刻感受到什么，这种感受由什么情境引起。按分组浏览。" },
 ];
 export const isLib = (v: string): v is LibId => LIBS.some((l) => l.id === v);
 export const libName = (id: string) => LIBS.find((l) => l.id === id)?.name ?? id;
@@ -49,7 +31,6 @@ export type Core = {
   updated: string;
   contract: string;
   counts: Record<LibId, number>;
-  total: number;
   groups: Record<LibId, Group[]>;
   groupName: (lib: string, group: string) => string;
 };
@@ -111,7 +92,6 @@ export function loadCore(): Promise<Core> {
       updated: d ? `${d[1]} 年 ${Number(d[2])} 月 ${Number(d[3])} 日` : "",
       contract: manifest.contract_version,
       counts,
-      total: counts.mechanism + counts.world + counts.experience,
       groups,
       groupName: (lib, group) => names.get(`${lib}/${group}`) ?? group,
     };

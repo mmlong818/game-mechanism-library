@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 import { LEVELS, libName, type Core, type Shell } from "./data";
 import { href } from "./router";
 
@@ -39,21 +39,19 @@ export function Tags({ tags }: { tags: string[] }) {
   );
 }
 
-export function Crumbs({ items }: { items: { label: string; to?: string }[] }) {
+// 面包屑：库名 / 分组名。库名链接回该库的封面墙页。
+export function Crumbs({ lib, group, core, linkGroup = false }: { lib: string; group: string; core: Core; linkGroup?: boolean }) {
+  const groupName = core.groupName(lib, group);
   return (
     <nav className="crumbs" aria-label="所在位置">
-      <a href={href.home}>首页</a>
-      {items.map((it) => (
-        <span key={it.label}>
-          <span aria-hidden="true"> / </span>
-          {it.to ? <a href={it.to}>{it.label}</a> : <span>{it.label}</span>}
-        </span>
-      ))}
+      <a href={href.wall(lib)}>{libName(lib)}</a>
+      <span aria-hidden="true"> / </span>
+      {linkGroup ? <a href={href.group(lib, group)}>{groupName}</a> : <span>{groupName}</span>}
     </nav>
   );
 }
 
-// 条目列表：名称加一句话定义，文字为主。
+// 卡片列表：名称加开头那句话，文字为主。每张卡只有名称这一个链接。
 export function EntryList({ items, core, where = false }: { items: Shell[]; core: Core; where?: boolean }) {
   return (
     <ul className="elist">
@@ -95,28 +93,5 @@ export function Chips({
         </a>
       ))}
     </div>
-  );
-}
-
-export function PageHead({
-  title,
-  lead,
-  img,
-  children,
-}: {
-  title: string;
-  lead?: ReactNode;
-  img?: string;
-  children?: ReactNode;
-}) {
-  return (
-    <header className={`phead ${img ? "has-img" : ""}`}>
-      {img && <img className="px" src={img} alt="" width={512} height={512} />}
-      <div>
-        <h1>{title}</h1>
-        {lead && <p>{lead}</p>}
-        {children}
-      </div>
-    </header>
   );
 }

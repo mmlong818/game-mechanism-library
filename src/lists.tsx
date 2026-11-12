@@ -1,80 +1,45 @@
 import { useEffect, useMemo, useState } from "react";
 import { LEVELS, LIBS, cover, loadIndex, useAll, useAsync, type Core, type LibId, type Shell } from "./data";
 import { goHome, href } from "./router";
-import { Chips, Crumbs, EntryList, PageHead, Status, useTitle } from "./ui";
+import { Chips, Crumbs, EntryList, Status, useTitle } from "./ui";
 
-const MECH_FILTERS = [{ value: "", label: "全部" }, ...LEVELS.map((l) => ({ value: l, label: l }))];
-const cleanTag = (lib: LibId, tag: string) => (lib === "mechanism" && MECH_FILTERS.some((f) => f.value === tag) ? tag : "");
-const match = (e: Shell, tag: string) => !tag || e.tags.includes(tag);
-
-// 库的目录页：分组列表加条数；机制库另有层级筛选。
-export function CollectionPage({ core, lib, tag: rawTag }: { core: Core; lib: LibId; tag: string }) {
+// 封面墙页：一个库的全部分组，一排五张小方图，图下是分组名和条数。
+// 机制的封面墙就是首页；世界观、体验各一页。顶部只有一行说明。
+export function WallPage({ core, lib }: { core: Core; lib: LibId }) {
   const meta = LIBS.find((l) => l.id === lib)!;
-  const tag = cleanTag(lib, rawTag);
-  useTitle(`${meta.name}库`);
-  const { data: index, error } = useAsync(() => loadIndex(lib), [lib]);
-  const groups = core.groups[lib];
-  const tagCount = (t: string) => index?.filter((e) => match(e, t)).length;
-  const rows = groups
-    .map((g) => {
-      const items = index?.filter((e) => e.group === g.id && match(e, tag)) ?? [];
-      return { g, items, count: index ? items.length : g.count };
-    })
-    .filter((r) => r.count > 0)
-    .sort((a, b) => b.count - a.count);
-
+  useTitle(meta.name);
+  const groups = [...core.groups[lib]].sort((a, b) => b.count - a.count);
   return (
     <>
-      <Crumbs items={[{ label: meta.name }]} />
-      <PageHead
-        title={`${meta.name}库`}
-        lead={`${meta.blurb}共 ${core.counts[lib]} ${meta.unit}，分 ${groups.length} 个${meta.groupWord}。点一个${meta.groupWord}看里面的卡片。`}
-      />
-      {lib === "mechanism" && (
-        <>
-          <Chips
-            label="筛选"
-            value={tag}
-            to={(v) => href.collection(lib, v)}
-            options={MECH_FILTERS.map((f) => ({ ...f, count: tagCount(f.value) }))}
-          />
-          <p className="hint">
-            具体机制是一条可以直接照做的规则；机制家族是同一思路下的一组做法；设计模式由几条机制组合而成。
-          </p>
-        </>
-      )}
-      {error && <Status error={error} />}
-      <ul className="glist">
-        {rows.map(({ g, items, count }) => (
+      <h1 className="wall-intro">
+        <b>{meta.name}</b>：{meta.intro}
+      </h1>
+      <ul className="covers">
+        {groups.map((g) => (
           <li key={g.id}>
-            <a href={href.group(lib, g.id, tag)}>
-              <b>{g.name}</b>
-              <i className="num">
-                {count} {meta.unit}
-              </i>
+            <a href={href.group(lib, g.id)}>
+              <img className="px" src={cover(`${lib}-${g.id}`)} alt="" width={512} height={512} loading="lazy" />
+              <span className="cap">
+                <b>{g.name}</b>
+                <i className="num">{g.count} 张</i>
+              </span>
             </a>
-            {items.length > 0 && (
-              <p>
-                {items
-                  .slice(0, 3)
-                  .map((e) => e.name)
-                  .join("；")}
-                {items.length > 3 && " 等"}
-              </p>
-            )}
           </li>
         ))}
       </ul>
-      {index && rows.length === 0 && <p className="status">没有符合的卡片。换一个筛选看看。</p>}
     </>
   );
 }
 
-// 分组页：该分组全部条目，名称加一句话定义。头部用一次该分组的封面。
+const MECH_FILTERS = [{ value: "", label: "全部" }, ...LEVELS.map((l) => ({ value: l, label: l }))];
+const LEVEL_HINT = "具体机制是一条可以直接照做的规则；机制家族是同一思路下的一组做法；设计模式由几条机制组合而成。";
+const match = (e: Shell, tag: string) => !tag || e.tags.includes(tag);
+
+// 分组页：该分组全部卡片，名称加开头那句话。头部用一次该分组的封面。机制可按层级筛选。
 export function GroupPage({ core, lib, group, tag: rawTag }: { core: Core; lib: LibId; group: string; tag: string }) {
   const meta = LIBS.find((l) => l.id === lib)!;
   const g = core.groups[lib].find((x) => x.id === group);
-  const tag = cleanTag(lib, rawTag);
+  const tag = lib === "mechanism" && LEVELS.includes(rawTag) ? rawTag : "";
   const [text, setText] = useState("");
   useEffect(() => {
     if (!g) goHome();
@@ -91,16 +56,18 @@ export function GroupPage({ core, lib, group, tag: rawTag }: { core: Core; lib: 
 
   return (
     <>
-      <Crumbs items={[{ label: meta.name, to: href.collection(lib) }, { label: g.name }]} />
-      <PageHead
-        title={g.name}
-        img={cover(`${lib}-${g.id}`)}
-        lead={`${g.count} ${meta.unit}${meta.name}卡片。点标题看全文。`}
-      />
+      <Crumbs lib={lib} group={group} core={core} />
+      <header className="phead has-img">
+        <img className="px" src={cover(`${lib}-${g.id}`)} alt="" width={512} height={512} />
+        <div>
+          <h1>{g.name}</h1>
+          <p>{g.count} 张卡片，点名称看全文。</p>
+        </div>
+      </header>
       <div className="tools">
         {lib === "mechanism" && (
           <Chips
-            label="筛选"
+            label="按层级筛选"
             value={tag}
             to={(v) => href.group(lib, group, v)}
             options={MECH_FILTERS.map((f) => ({ ...f, count: inGroup.filter((e) => match(e, f.value)).length })).filter(
@@ -115,17 +82,11 @@ export function GroupPage({ core, lib, group, tag: rawTag }: { core: Core; lib: 
           </label>
         )}
       </div>
+      {lib === "mechanism" && <p className="hint">{LEVEL_HINT}</p>}
       {!index ? (
         <Status error={error} />
       ) : items.length ? (
-        <>
-          {(tag || needle) && (
-            <p className="hint">
-              找到 {items.length} {meta.unit}。
-            </p>
-          )}
-          <EntryList items={items} core={core} />
-        </>
+        <EntryList items={items} core={core} />
       ) : (
         <p className="status">没有符合的卡片。换个词或换一个筛选看看。</p>
       )}
@@ -136,7 +97,7 @@ export function GroupPage({ core, lib, group, tag: rawTag }: { core: Core; lib: 
 const EXAMPLES = ["冷却", "牌组", "担保", "成长实感", "潜行"];
 const PAGE = 60;
 
-// 搜索：在三个库的 index 里查名称、一句话定义和分组名。
+// 搜索：在三个库里查名称、开头那句话和分组名。
 export function SearchPage({ core, q, c }: { core: Core; q: string; c: string }) {
   useTitle(q ? `搜索“${q}”` : "搜索");
   const { data: all, error } = useAll();
@@ -179,11 +140,12 @@ export function SearchPage({ core, q, c }: { core: Core; q: string; c: string })
 
   return (
     <>
-      <Crumbs items={[{ label: "搜索" }]} />
-      <PageHead
-        title={q.trim() ? `搜索“${q.trim()}”` : "搜索"}
-        lead="可以搜卡片的名称、开头那句话和所在的分组。多个词用空格隔开，会找同时包含这些词的卡片。"
-      />
+      <header className="phead">
+        <div>
+          <h1>{q.trim() ? `搜索“${q.trim()}”` : "搜索"}</h1>
+          <p>可以搜卡片的名称、开头那句话和所在的分组。多个词用空格隔开，会找同时包含这些词的卡片。</p>
+        </div>
+      </header>
       {!all ? (
         <Status error={error} />
       ) : !terms.length ? (
@@ -211,7 +173,7 @@ export function SearchPage({ core, q, c }: { core: Core; q: string; c: string })
               <EntryList items={shown.slice(0, limit)} core={core} where />
               {shown.length > limit && (
                 <button type="button" className="btn more" onClick={() => setLimit(limit + PAGE)}>
-                  再显示 {Math.min(PAGE, shown.length - limit)} 条（还有 {shown.length - limit} 条）
+                  再显示 {Math.min(PAGE, shown.length - limit)} 张（还有 {shown.length - limit} 张）
                 </button>
               )}
             </>

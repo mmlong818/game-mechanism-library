@@ -1,8 +1,7 @@
 // 核对 public/data 里的当前发布包：
 // 1. 每个库 index 里的 id 都能在对应分组的 cards 文件里找到，条数与 manifest、groups 一致；
 // 2. 所有 links 都指向存在的条目；
-// 3. 首页“按设计需求找”的目标条目都存在；
-// 4. 每个分组都有封面图。
+// 3. 每个分组都有封面图。
 import { readFile, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -45,9 +44,7 @@ for (const col of manifest.collections.filter((c) => c.kind === "cards")) {
 }
 for (const [from, to] of links) if (!all.has(to)) errors.push(`${from}: 链接指向不存在的 ${to}`);
 
-const needs = await json("src/needs.json");
-for (const n of needs) if (!all.has(n.to)) errors.push(`按设计需求找：${n.to} 不存在`);
-console.log(`links: ${links.length} 条；按设计需求找: ${needs.length} 条`);
+console.log(`links: ${links.length} 条`);
 
 if (errors.length) {
   console.error(errors.slice(0, 50).join("\n"));

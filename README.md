@@ -8,8 +8,8 @@
 
 - `public/data/current.json`：当前用哪个发布包，例如 `{"release":"2026-11-12.1"}`。
 - `public/data/release/<发布编号>/`：发布包原样复制进来，不要改里面的文件。
-- `public/covers/`：首页和分组页头部用的像素封面，512×512 的 jpg。文件名是 `<库>-<分组 slug>.jpg`，另有 `section-needs.jpg`、`section-mcp.jpg`（`section-articles.jpg` 留给以后的专题文章）。
-- `src/`：页面代码。`data.ts` 读发布包，`router.ts` 是 hash 路由，`home.tsx`、`lists.tsx`、`entry.tsx`、`info.tsx` 是各个页面，`needs.json` 是首页“按设计需求找”的六条。
+- `public/covers/`：封面墙和分组页头部用的像素封面，512×512 的 jpg，每个分组一张，文件名是 `<库>-<分组 slug>.jpg`。
+- `src/`：页面代码。`data.ts` 读发布包，`router.ts` 是 hash 路由，`lists.tsx` 是封面墙页、分组页和搜索，`entry.tsx` 是详情页，`info.tsx` 是接入 AI 说明。
 - `scripts/check-data.mjs`：核对发布包。`scripts/resize-covers.py`：把封面缩到 512×512。`scripts/preview-pages.mjs`：按 GitHub Pages 的子路径预览 `dist`。
 
 ## 本地构建
@@ -39,10 +39,9 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 2. 把这个目录整个复制到本仓库的 `public/data/release/<新编号>/`。
 3. 把 `public/data/current.json` 改成 `{"release":"<新编号>"}`。
 4. 旧的发布包目录可以删掉，也可以留着以便回退；留着会一起部署，每个约 13 MB。回退时只需把 `current.json` 改回旧编号。
-5. 运行 `npm run check:data`。它会核对：每个库 index 里的 id 都能在对应分组的 cards 文件里找到；所有链接都指向存在的条目；首页“按设计需求找”的目标条目都在；每个分组都有封面图。
+5. 运行 `npm run check:data`。它会核对：每个库 index 里的 id 都能在对应分组的 cards 文件里找到；所有链接都指向存在的条目；每个分组都有封面图。
 6. 如果新包里有新的分组，给它补一张封面放到 `public/covers/<库>-<分组 slug>.jpg`（可以用 `python scripts/resize-covers.py <封面源目录>` 批量缩图）。
-7. 如果“按设计需求找”的目标条目被合并或删除了，改 `src/needs.json`。
-8. `npm run build`，本地预览看一眼，再提交、推送。
+7. `npm run build`，本地预览看一眼，再提交、推送。
 
 发布包的约定大版本变了（1.x 变成 2.0）时，页面会拒绝加载并说明原因，这时需要跟着改 `src/data.ts`。
 
@@ -52,12 +51,14 @@ VITE_BASE_PATH=/game-mechanism-library/ npm run preview:pages
 
 | 地址 | 页面 |
 |---|---|
-| `#/` | 首页 |
-| `#/c/<库>` | 库的目录，机制库可加 `?tag=具体机制`、`机制家族`、`设计模式` |
-| `#/c/<库>/<分组>` | 分组页 |
+| `#/` | 首页，也就是机制的主题封面墙（`#/c/mechanism` 会跳到这里） |
+| `#/c/world`、`#/c/experience` | 世界观、体验的分组封面墙 |
+| `#/c/<库>/<分组>` | 分组页，机制可加 `?tag=具体机制`、`机制家族`、`设计模式` |
 | `#/e/<库>/<id>` | 详情页 |
 | `#/search?q=<词>&c=<库>` | 搜索 |
 | `#/mcp` | 接入 AI 说明 |
+
+每个页面只有一条浏览路径：导航进库的封面墙，封面墙进分组页，分组页进详情页。接入 AI 只从导航进。页脚不放链接。
 
 旧版的地址（`#community`、`#favorites`、`m_` 开头的卡片 id 等任何不认识的地址）统一回到首页。专题文章还没有内容，`#/articles` 暂时也回首页，等有文章了再加回导航和首页。旧的 `#/new` 同样回首页。
 

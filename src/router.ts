@@ -1,10 +1,18 @@
-// hash 路由。不认识的地址（包括旧版的 #community、#favorites、m_ 开头的卡片 id，以及已经撤下的 #/new、#/articles）一律回首页。
+// hash 路由。每个页面只有一个正式地址：
+//   #/                 机制的主题封面墙（首页）
+//   #/c/world          世界观的分组封面墙
+//   #/c/experience     体验的分组封面墙
+//   #/c/<库>/<分组>    分组页（卡片列表）
+//   #/e/<库>/<id>      详情页
+//   #/search?q=&c=     搜索
+//   #/mcp              接入 AI
+// #/c/mechanism 跳到 #/。其余不认识的地址（旧版的 #community、#favorites、m_ 开头的卡片 id，
+// 以及已经撤下的 #/new、#/articles）一律回首页。
 import { useEffect, useState } from "react";
 import { isLib, type LibId } from "./data";
 
 export type Route =
-  | { name: "home" }
-  | { name: "collection"; lib: LibId; tag: string }
+  | { name: "wall"; lib: LibId }
   | { name: "group"; lib: LibId; group: string; tag: string }
   | { name: "entry"; lib: LibId; id: string }
   | { name: "search"; q: string; c: string }
@@ -13,7 +21,7 @@ export type Route =
 
 export function parse(hash: string): Route {
   const raw = hash.replace(/^#/, "");
-  if (raw === "" || raw === "/") return { name: "home" };
+  if (raw === "/") return { name: "wall", lib: "mechanism" };
   if (!raw.startsWith("/")) return { name: "unknown" };
   const [pathPart, queryPart = ""] = raw.split("?");
   let seg: string[];
@@ -29,17 +37,15 @@ export function parse(hash: string): Route {
     if (a === "search") return { name: "search", q: query.get("q") ?? "", c: query.get("c") ?? "" };
   }
   if (a === "c" && b && isLib(b)) {
-    const tag = query.get("tag") ?? "";
-    if (seg.length === 2) return { name: "collection", lib: b, tag };
-    if (seg.length === 3) return { name: "group", lib: b, group: c, tag };
+    if (seg.length === 2 && b !== "mechanism") return { name: "wall", lib: b };
+    if (seg.length === 3) return { name: "group", lib: b, group: c, tag: query.get("tag") ?? "" };
   }
   if (a === "e" && b && isLib(b) && seg.length === 3) return { name: "entry", lib: b, id: `${b}/${c}` };
   return { name: "unknown" };
 }
 
 export const href = {
-  home: "#/",
-  collection: (lib: string, tag = "") => `#/c/${lib}${tag ? `?tag=${encodeURIComponent(tag)}` : ""}`,
+  wall: (lib: string) => (lib === "mechanism" ? "#/" : `#/c/${lib}`),
   group: (lib: string, group: string, tag = "") =>
     `#/c/${lib}/${encodeURIComponent(group)}${tag ? `?tag=${encodeURIComponent(tag)}` : ""}`,
   entry: (globalId: string) => `#/e/${globalId.split("/").map(encodeURIComponent).join("/")}`,
@@ -53,15 +59,11 @@ export const href = {
   mcp: "#/mcp",
 };
 
-export function goHome() {
-  history.replaceState(null, "", location.pathname + location.search + "#/");
-  window.dispatchEvent(new HashChangeEvent("hashchange"));
-}
-
 export function replaceHash(hash: string) {
   history.replaceState(null, "", location.pathname + location.search + hash);
   window.dispatchEvent(new HashChangeEvent("hashchange"));
 }
+export const goHome = () => replaceHash("#/");
 
 export function useRoute(): Route {
   const [hash, setHash] = useState(location.hash);

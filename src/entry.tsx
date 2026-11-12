@@ -296,6 +296,7 @@ function buildRows(card: Card, all: All): Row[] {
 
   // links 里正文没有带到的条目，单列一栏。
   const rest = (card.links ?? []).filter((l) => !shown.has(l.to) && all.byId.has(l.to));
+  for (const l of rest) shown.add(l.to);
   add("links", "还和这些卡片有关", rest.length, () => (
     <ul className="named">
       {rest.map((l) => (
@@ -310,7 +311,8 @@ function buildRows(card: Card, all: All): Row[] {
   ));
 
   // 反向链接：三个库的 index 里指向这一条的条目。
-  const back = all.back.get(card.id) ?? [];
+  // 已经在上面各栏出现过的卡片不再重复列出。
+  const back = (all.back.get(card.id) ?? []).filter((x) => !shown.has(x.from));
   add("backlinks", "哪些卡片提到了它", back.length, () => (
     <div className="back">
       {LIBS.map((l) => {
@@ -374,12 +376,7 @@ export function EntryPage({ core, lib, id }: { core: Core; lib: LibId; id: strin
 
   return (
     <>
-      <Crumbs
-        items={[
-          { label: meta.name, to: href.collection(lib) },
-          { label: core.groupName(lib, shell.group), to: href.group(lib, shell.group) },
-        ]}
-      />
+      <Crumbs lib={lib} group={shell.group} core={core} linkGroup />
       <div className="entry">
         <article className="card">
           <header className="card-head">

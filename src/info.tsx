@@ -1,17 +1,15 @@
-import { cover, type Core } from "./data";
-import { href } from "./router";
-import { Crumbs, PageHead, useTitle } from "./ui";
+import { useTitle } from "./ui";
 
-export function McpPage({ core }: { core: Core }) {
+export function McpPage() {
   useTitle("接入 AI");
   return (
     <>
-      <Crumbs items={[{ label: "接入 AI" }]} />
-      <PageHead
-        title="在你的 AI 工具里直接查这些卡片"
-        img={cover("section-mcp")}
-        lead="把资料库接到 Claude 这类 AI 工具上，聊设计时 AI 就能自己来查卡片。即将开放。"
-      />
+      <header className="phead">
+        <div>
+          <h1>在你的 AI 工具里直接查这些卡片</h1>
+          <p>把资料库接到 Claude 这类 AI 工具上，聊设计时 AI 就能自己来查卡片。即将开放。</p>
+        </div>
+      </header>
       <div className="prose">
         <h2>接上以后你能做什么</h2>
         <ul>
@@ -22,9 +20,7 @@ export function McpPage({ core }: { core: Core }) {
         </ul>
 
         <h2>AI 能怎么查</h2>
-        <p>
-          接上以后，AI 查到的内容和你在这个网站上看到的完全一样，一共 {core.total} 张卡片。它只能读，不能改。它有这几种查法：
-        </p>
+        <p>接上以后，AI 查到的内容和你在这个网站上看到的完全一样。它只能读，不能改。它有这几种查法：</p>
         <ul>
           <li>看有哪几个库，每个库分成哪些主题、各有多少张。</li>
           <li>按关键词搜卡片，可以限定在某个库、某个主题里搜。</li>
@@ -49,12 +45,7 @@ export function McpPage({ core }: { core: Core }) {
         <p>开放以后，具体的接法会写在这一页。</p>
 
         <h2>现在可以先这样用</h2>
-        <p>
-          直接在网站上查：用页面顶部的<a href={href.search("")}>搜索</a>，或者从
-          <a href={href.collection("mechanism")}>机制</a>、<a href={href.collection("world")}>世界观</a>、
-          <a href={href.collection("experience")}>体验</a>
-          三个库的目录进去。看到有用的卡片，把卡片内容贴给 AI，也可以让它照着卡片和你讨论。
-        </p>
+        <p>直接在这个网站上查：从导航进三个库，或者用顶部的搜索框。看到有用的卡片，把卡片内容贴给 AI，也可以让它照着卡片和你讨论。</p>
       </div>
     </>
   );
