@@ -4,17 +4,22 @@
 //   #/c/experience     体验的分组封面墙
 //   #/c/<库>/<分组>    分组页（卡片列表）
 //   #/e/<库>/<id>      详情页
+//   #/c/book           书（只有一本时就是这本书的目录）
+//   #/c/book/<书>      一本书的目录（只有一本时跳到 #/c/book）
+//   #/e/book/<id>      章节阅读页
 //   #/search?q=&c=     搜索
 //   #/mcp              接入 AI
 // #/c/mechanism 跳到 #/。其余不认识的地址（旧版的 #community、#favorites、m_ 开头的卡片 id，
 // 以及已经撤下的 #/new、#/articles）一律回首页。
 import { useEffect, useState } from "react";
-import { isLib, type LibId } from "./data";
+import { BOOK, isLib, type LibId } from "./data";
 
 export type Route =
   | { name: "wall"; lib: LibId }
   | { name: "group"; lib: LibId; group: string; tag: string }
   | { name: "entry"; lib: LibId; id: string }
+  | { name: "book"; slug: string }
+  | { name: "chapter"; id: string }
   | { name: "search"; q: string; c: string }
   | { name: "mcp" }
   | { name: "unknown" };
@@ -36,6 +41,8 @@ export function parse(hash: string): Route {
     if (a === "mcp") return { name: "mcp" };
     if (a === "search") return { name: "search", q: query.get("q") ?? "", c: query.get("c") ?? "" };
   }
+  if (a === "c" && b === BOOK && seg.length <= 3) return { name: "book", slug: c ?? "" };
+  if (a === "e" && b === BOOK && seg.length === 3) return { name: "chapter", id: `${BOOK}/${c}` };
   if (a === "c" && b && isLib(b)) {
     if (seg.length === 2 && b !== "mechanism") return { name: "wall", lib: b };
     if (seg.length === 3) return { name: "group", lib: b, group: c, tag: query.get("tag") ?? "" };
@@ -56,6 +63,7 @@ export const href = {
     const s = p.toString();
     return `#/search${s ? `?${s}` : ""}`;
   },
+  book: (slug = "") => `#/c/${BOOK}${slug ? `/${encodeURIComponent(slug)}` : ""}`,
   mcp: "#/mcp",
 };
 

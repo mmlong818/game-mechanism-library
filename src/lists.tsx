@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { LEVELS, LIBS, cover, loadIndex, useAll, useAsync, type Core, type LibId, type Shell } from "./data";
+import { BOOK, BOOK_NAME, LEVELS, LIBS, cover, loadIndex, useAll, useAsync, type Core, type LibId, type Shell } from "./data";
 import { goHome, href } from "./router";
 import { Chips, Crumbs, EntryList, Status, useTitle } from "./ui";
 
@@ -97,7 +97,7 @@ export function GroupPage({ core, lib, group, tag: rawTag }: { core: Core; lib: 
 const EXAMPLES = ["冷却", "牌组", "担保", "成长实感", "潜行"];
 const PAGE = 60;
 
-// 搜索：在三个库里查名称、开头那句话和分组名。
+// 搜索：在三个卡片库里查名称、开头那句话和分组名；书按章节标题、开头和书名查。
 export function SearchPage({ core, q, c }: { core: Core; q: string; c: string }) {
   useTitle(q ? `搜索“${q}”` : "搜索");
   const { data: all, error } = useAll();
@@ -143,7 +143,7 @@ export function SearchPage({ core, q, c }: { core: Core; q: string; c: string })
       <header className="phead">
         <div>
           <h1>{q.trim() ? `搜索“${q.trim()}”` : "搜索"}</h1>
-          <p>可以搜卡片的名称、开头那句话和所在的分组。多个词用空格隔开，会找同时包含这些词的卡片。</p>
+          <p>可以搜卡片的名称、开头那句话和所在的分组，也可以搜书里各章的标题和开头。多个词用空格隔开，会找同时包含这些词的条目。</p>
         </div>
       </header>
       {!all ? (
@@ -165,7 +165,11 @@ export function SearchPage({ core, q, c }: { core: Core; q: string; c: string })
             to={(v) => href.search(q, v)}
             options={[
               { value: "", label: "全部", count: hits.length },
-              ...LIBS.map((l) => ({ value: l.id, label: l.name, count: hits.filter((e) => e.collection === l.id).length })),
+              ...[...LIBS, ...(core.books.length ? [{ id: BOOK, name: BOOK_NAME }] : [])].map((l) => ({
+                value: l.id,
+                label: l.name,
+                count: hits.filter((e) => e.collection === l.id).length,
+              })),
             ]}
           />
           {shown.length ? (
@@ -173,12 +177,12 @@ export function SearchPage({ core, q, c }: { core: Core; q: string; c: string })
               <EntryList items={shown.slice(0, limit)} core={core} where />
               {shown.length > limit && (
                 <button type="button" className="btn more" onClick={() => setLimit(limit + PAGE)}>
-                  再显示 {Math.min(PAGE, shown.length - limit)} 张（还有 {shown.length - limit} 张）
+                  再显示 {Math.min(PAGE, shown.length - limit)} 条（还有 {shown.length - limit} 条）
                 </button>
               )}
             </>
           ) : (
-            <p className="status">没有找到相关的卡片。换个更短的词试试，比如只留两三个字。</p>
+            <p className="status">没有找到相关的内容。换个更短的词试试，比如只留两三个字。</p>
           )}
         </>
       )}

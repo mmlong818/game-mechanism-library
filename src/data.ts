@@ -13,7 +13,7 @@ export type Shell = {
   links: Link[];
 };
 export type Card = Shell & { body: Record<string, unknown> };
-export type Group = { id: string; name: string; count: number };
+export type Group = { id: string; name: string; count: number; description?: string; author?: string };
 export type LibId = "mechanism" | "world" | "experience";
 
 export const LIBS: { id: LibId; name: string; intro: string }[] = [
@@ -22,7 +22,10 @@ export const LIBS: { id: LibId; name: string; intro: string }[] = [
   { id: "experience", name: "体验", intro: "玩家在某一刻感受到什么，这种感受由什么情境引起。按分组浏览。" },
 ];
 export const isLib = (v: string): v is LibId => LIBS.some((l) => l.id === v);
-export const libName = (id: string) => LIBS.find((l) => l.id === id)?.name ?? id;
+// 书是另一种库（kind 为 articles）：分组是一本书，条目是一章，正文是 markdown。
+export const BOOK = "book";
+export const BOOK_NAME = "书";
+export const libName = (id: string) => (id === BOOK ? BOOK_NAME : (LIBS.find((l) => l.id === id)?.name ?? id));
 
 export const LEVELS = ["具体机制", "机制家族", "设计模式"];
 
@@ -32,6 +35,7 @@ export type Core = {
   contract: string;
   counts: Record<LibId, number>;
   groups: Record<LibId, Group[]>;
+  books: Group[];
   groupName: (lib: string, group: string) => string;
 };
 export type Backlink = { from: string; rel: string };
@@ -84,7 +88,11 @@ export function loadCore(): Promise<Core> {
       groups[l.id] = groupLists[i];
       counts[l.id] = manifest.collections.find((c) => c.id === l.id)?.count ?? 0;
     });
+    const books = manifest.collections.some((c) => c.id === BOOK && c.kind === "articles")
+      ? await getJson<Group[]>(`${root}/collections/${BOOK}/groups.json`)
+      : [];
     const names = new Map<string, string>();
+    for (const b of books) names.set(`${BOOK}/${b.id}`, b.name);
     for (const l of present) for (const g of groups[l.id]) names.set(`${l.id}/${g.id}`, g.name);
     const d = /^(\d{4})-(\d{2})-(\d{2})/.exec(release);
     return {
@@ -93,6 +101,7 @@ export function loadCore(): Promise<Core> {
       contract: manifest.contract_version,
       counts,
       groups,
+      books,
       groupName: (lib, group) => names.get(`${lib}/${group}`) ?? group,
     };
   })();
@@ -108,12 +117,19 @@ export async function loadIndex(lib: LibId): Promise<Shell[]> {
   return getJson<Shell[]>(`${await colPath(lib)}/index.json`);
 }
 
+// 书的全部章节外壳，顺序就是书里的章节顺序。
+export async function loadChapters(): Promise<Shell[]> {
+  const core = await loadCore();
+  if (!core.books.length) return [];
+  return getJson<Shell[]>(`${await colPath(BOOK)}/index.json`);
+}
+
 let allPromise: Promise<All> | undefined;
 export function loadAll(): Promise<All> {
   allPromise ??= (async () => {
-    const lists = await Promise.all(LIBS.map((l) => loadIndex(l.id)));
+    const [chapters, ...lists] = await Promise.all([loadChapters(), ...LIBS.map((l) => loadIndex(l.id))]);
     const byLib = { mechanism: lists[0], world: lists[1], experience: lists[2] };
-    const list = lists.flat();
+    const list = [...lists.flat(), ...chapters];
     const byId = new Map(list.map((e) => [e.id, e]));
     const back = new Map<string, Backlink[]>();
     for (const e of list) {

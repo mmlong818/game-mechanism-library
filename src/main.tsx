@@ -1,15 +1,16 @@
 import { StrictMode, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import "./globals.css";
-import { LIBS, useCore, type Core } from "./data";
+import { BookPage, ChapterPage } from "./book";
+import { BOOK_NAME, LIBS, useCore, type Core } from "./data";
 import { EntryPage } from "./entry";
 import { McpPage } from "./info";
 import { GroupPage, SearchPage, WallPage } from "./lists";
 import { goHome, href, replaceHash, useRoute, type Route } from "./router";
 import { Status } from "./ui";
 
-// 导航：站名、三个库、接入 AI、搜索框。当前所在的库高亮。
-function Header({ route }: { route: Route }) {
+// 导航：站名、三个卡片库、书、接入 AI、搜索框。当前所在的库高亮。
+function Header({ route, core }: { route: Route; core?: Core }) {
   const input = useRef<HTMLInputElement>(null);
   const searchQ = route.name === "search" ? route.q : null;
   const searchC = route.name === "search" ? route.c : "";
@@ -44,6 +45,11 @@ function Header({ route }: { route: Route }) {
             {l.name}
           </a>
         ))}
+        {core && core.books.length > 0 && (
+          <a href={href.book()} aria-current={current(route.name === "book" || route.name === "chapter")}>
+            {BOOK_NAME}
+          </a>
+        )}
         <a href={href.mcp} aria-current={current(route.name === "mcp")}>
           接入 AI
         </a>
@@ -56,7 +62,7 @@ function Header({ route }: { route: Route }) {
           location.hash = href.search(input.current?.value ?? "", searchC);
         }}
       >
-        <input ref={input} type="search" placeholder="搜卡片" aria-label="搜索卡片" onChange={(e) => type(e.target.value)} />
+        <input ref={input} type="search" placeholder="搜卡片和书" aria-label="搜索卡片和书" onChange={(e) => type(e.target.value)} />
       </form>
     </header>
   );
@@ -70,6 +76,10 @@ function Page({ route, core }: { route: Route; core: Core }) {
       return <GroupPage core={core} lib={route.lib} group={route.group} tag={route.tag} />;
     case "entry":
       return <EntryPage core={core} lib={route.lib} id={route.id} />;
+    case "book":
+      return <BookPage core={core} slug={route.slug} />;
+    case "chapter":
+      return <ChapterPage core={core} id={route.id} />;
     case "search":
       return <SearchPage core={core} q={route.q} c={route.c} />;
     case "mcp":
@@ -90,7 +100,11 @@ function App() {
   const place =
     route.name === "entry"
       ? route.id
-      : route.name === "group"
+      : route.name === "chapter"
+        ? route.id
+        : route.name === "book"
+          ? `book/${route.slug}`
+          : route.name === "group"
         ? `${route.lib}/${route.group}`
         : route.name === "wall"
           ? route.lib
@@ -104,7 +118,7 @@ function App() {
       <button type="button" className="skip" onClick={() => document.getElementById("main")?.focus()}>
         跳到正文
       </button>
-      <Header route={route} />
+      <Header route={route} core={core} />
       <main id="main" className="in page" tabIndex={-1}>
         {core ? <Page route={route} core={core} /> : <Status error={error} />}
       </main>
