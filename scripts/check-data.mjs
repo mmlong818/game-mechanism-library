@@ -1,7 +1,7 @@
 // 核对 public/data 里的当前发布包：
 // 1. 每个库 index 里的 id 都能在对应分组的 cards 文件里找到，条数与 manifest、groups 一致；
 // 2. 所有 links 都指向存在的条目；
-// 3. 卡片库的每个分组都有封面图；
+// 3. 卡片库的每个分组都有封面图（三栏界面左栏的缩略图）；
 // 4. 书（kind 为 articles 的库）每章的正文是非空的 markdown，章节序号齐全且不重复，每本书有书名。
 import { readFile, access } from "node:fs/promises";
 import path from "node:path";

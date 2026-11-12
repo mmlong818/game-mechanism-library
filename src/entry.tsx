@@ -1,8 +1,8 @@
-// 详情页。三类卡各一种版式；body 里不认识的字段忽略，缺字段的栏目不显示。
-import { useEffect, type ReactNode } from "react";
-import { LIBS, loadGroupCards, loadRedirects, useAll, useAsync, type All, type Card, type Core, type LibId } from "./data";
-import { goHome, href, replaceHash } from "./router";
-import { Crumbs, Status, Tags, useTitle } from "./ui";
+// 卡片全文（三栏界面的右栏）。三类卡各一种版式；body 里不认识的字段忽略，缺字段的栏目不显示。
+import { useEffect, useRef, type ReactNode } from "react";
+import { LIBS, loadGroupCards, useAll, useAsync, type All, type Card, type LibId, type Shell } from "./data";
+import { href } from "./router";
+import { Status, Tags } from "./ui";
 
 type Obj = Record<string, unknown>;
 const S = (v: unknown): string => (typeof v === "string" ? v.trim() : typeof v === "number" ? String(v) : "");
@@ -99,7 +99,7 @@ function buildRows(card: Card, all: All): Row[] {
     if (!hit) return <b>{name}</b>;
     shown.add(gid);
     return (
-      <a className="ref" href={href.entry(gid)}>
+      <a className="ref" href={href.shell(hit)}>
         {name || hit.name}
       </a>
     );
@@ -301,7 +301,7 @@ function buildRows(card: Card, all: All): Row[] {
     <ul className="named">
       {rest.map((l) => (
         <li key={l.to}>
-          <a className="ref" href={href.entry(l.to)}>
+          <a className="ref" href={href.shell(all.byId.get(l.to)!)}>
             {all.byId.get(l.to)!.name}
           </a>
           <span>{l.note ?? ""}</span>
@@ -327,7 +327,7 @@ function buildRows(card: Card, all: All): Row[] {
             <ul>
               {items.map((x) => (
                 <li key={x.from}>
-                  <a className="ref" href={href.entry(x.from)}>
+                  <a className="ref" href={href.shell(all.byId.get(x.from)!)}>
                     {all.byId.get(x.from)!.name}
                   </a>
                   <span>{REL_BACK[x.rel] ?? REL_BACK.related}</span>
@@ -344,82 +344,48 @@ function buildRows(card: Card, all: All): Row[] {
 
 const LEAD: Record<LibId, string> = { mechanism: "它是什么", world: "根本事实", experience: "玩家感受到什么" };
 
-export function EntryPage({ core, lib, id }: { core: Core; lib: LibId; id: string }) {
+// 右栏：一张卡的全文。名称和开头那句话来自 index，马上就能显示；其余栏目等该分组的 cards 文件。
+export function CardPane({ lib, shell }: { lib: LibId; shell: Shell }) {
   const { data: all, error: allError } = useAll();
-  const shell = all?.byId.get(id);
-  // 找不到的 id：先查 redirects.json，有去向就跳过去，否则回首页。
+  const { data: cards, error: cardsError } = useAsync(() => loadGroupCards(lib, shell.group), [lib, shell.group]);
+  const box = useRef<HTMLElement>(null);
+  // 换卡片时回到顶部。
   useEffect(() => {
-    if (!all || shell) return;
-    let live = true;
-    loadRedirects(lib).then((map) => {
-      if (!live) return;
-      const to = map[id];
-      if (to && all.byId.has(to)) replaceHash(href.entry(to));
-      else goHome();
-    });
-    return () => {
-      live = false;
-    };
-  }, [all, shell, lib, id]);
-  const { data: cards, error: cardsError } = useAsync(
-    () => (shell ? loadGroupCards(shell.collection, shell.group) : Promise.resolve(undefined)),
-    [shell?.collection, shell?.group],
-  );
-  useTitle(shell?.name ?? "");
-  if (!all || !shell) return <Status error={allError} />;
-
-  const meta = LIBS.find((l) => l.id === lib)!;
-  const card = cards?.find((c) => c.id === id);
-  const rows = card ? buildRows(card, all) : [];
+    box.current?.parentElement?.scrollTo(0, 0);
+  }, [shell.id]);
+  const card = cards?.find((c) => c.id === shell.id);
+  const rows = card && all ? buildRows(card, all) : [];
   const boundary = card ? S(card.body.boundary) : "";
-  const jump = (key: string) => document.getElementById(`row-${key}`)?.scrollIntoView({ block: "start" });
+  const failed = allError ?? cardsError ?? (cards && !card ? new Error("card missing in group file") : undefined);
 
   return (
-    <>
-      <Crumbs lib={lib} group={shell.group} core={core} linkGroup />
-      <div className="entry">
-        <article className="card">
-          <header className="card-head">
-            <div className="meta">
-              <span className="tag">{meta.name}</span>
-              <Tags tags={shell.tags} />
+    <article className="card" ref={box}>
+      <header className="card-head">
+        <Tags tags={shell.tags} />
+        <h1>{shell.name}</h1>
+        <dl className="lead">
+          <div>
+            <dt>{LEAD[lib]}</dt>
+            <dd className="definition">{shell.summary}</dd>
+          </div>
+          {boundary && (
+            <div>
+              <dt>不算这一条的</dt>
+              <dd>{boundary}</dd>
             </div>
-            <h1>{shell.name}</h1>
-            <dl className="lead">
-              <div>
-                <dt>{LEAD[lib]}</dt>
-                <dd className="definition">{shell.summary}</dd>
-              </div>
-              {boundary && (
-                <div>
-                  <dt>不算这一条的</dt>
-                  <dd>{boundary}</dd>
-                </div>
-              )}
-            </dl>
-          </header>
-          {!card ? (
-            <Status error={cardsError ?? (cards ? new Error("card missing in group file") : undefined)} />
-          ) : (
-            rows.map((r) => (
-              <section className="row" key={r.key} id={`row-${r.key}`}>
-                <h2 className="label">{r.label}</h2>
-                <div className="body">{r.node}</div>
-              </section>
-            ))
           )}
-        </article>
-        {rows.length > 0 && (
-          <nav className="toc" aria-label="本页内容">
-            <div>本页内容</div>
-            {rows.map((r) => (
-              <button key={r.key} type="button" onClick={() => jump(r.key)}>
-                {r.label}
-              </button>
-            ))}
-          </nav>
-        )}
-      </div>
-    </>
+        </dl>
+      </header>
+      {rows.length ? (
+        rows.map((r) => (
+          <section className="row" key={r.key}>
+            <h2 className="label">{r.label}</h2>
+            <div className="body">{r.node}</div>
+          </section>
+        ))
+      ) : (
+        <Status error={failed} />
+      )}
+    </article>
   );
 }

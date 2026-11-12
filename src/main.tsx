@@ -3,9 +3,9 @@ import { createRoot } from "react-dom/client";
 import "./globals.css";
 import { BookPage, ChapterPage } from "./book";
 import { BOOK_NAME, LIBS, useCore, type Core } from "./data";
-import { EntryPage } from "./entry";
+import { BrowsePage, EntryRedirect } from "./browse";
 import { McpPage } from "./info";
-import { GroupPage, SearchPage, WallPage } from "./lists";
+import { SearchPage } from "./lists";
 import { goHome, href, replaceHash, useRoute, type Route } from "./router";
 import { Status } from "./ui";
 
@@ -22,7 +22,7 @@ function Header({ route, core }: { route: Route; core?: Core }) {
     if (searchQ === null) el.value = "";
     else if (document.activeElement !== el) el.value = searchQ;
   }, [searchQ]);
-  const routeLib = route.name === "wall" || route.name === "group" || route.name === "entry" ? route.lib : "";
+  const routeLib = route.name === "browse" || route.name === "entry" ? route.lib : "";
   const current = (on: boolean) => (on ? ("page" as const) : undefined);
   const type = (value: string) => {
     const target = href.search(value, searchC);
@@ -54,7 +54,7 @@ function Header({ route, core }: { route: Route; core?: Core }) {
       </a>
       <nav aria-label="主导航">
         {LIBS.map((l) => (
-          <a key={l.id} href={href.wall(l.id)} aria-current={current(routeLib === l.id)}>
+          <a key={l.id} href={href.lib(l.id)} aria-current={current(routeLib === l.id)}>
             {l.name}
           </a>
         ))}
@@ -84,12 +84,10 @@ function Header({ route, core }: { route: Route; core?: Core }) {
 
 function Page({ route, core }: { route: Route; core: Core }) {
   switch (route.name) {
-    case "wall":
-      return <WallPage core={core} lib={route.lib} />;
-    case "group":
-      return <GroupPage core={core} lib={route.lib} group={route.group} tag={route.tag} />;
+    case "browse":
+      return <BrowsePage core={core} lib={route.lib} group={route.group} card={route.card} />;
     case "entry":
-      return <EntryPage core={core} lib={route.lib} id={route.id} />;
+      return <EntryRedirect lib={route.lib} id={route.id} />;
     case "book":
       return <BookPage core={core} slug={route.slug} />;
     case "chapter":
@@ -110,19 +108,11 @@ function App() {
   useEffect(() => {
     if (route.name === "unknown") goHome();
   }, [route.name]);
-  // 换页回到顶部；搜索时改词、分组页切筛选不动。
-  const place =
-    route.name === "entry"
-      ? route.id
-      : route.name === "chapter"
-        ? route.id
-        : route.name === "book"
-          ? `book/${route.slug}`
-          : route.name === "group"
-        ? `${route.lib}/${route.group}`
-        : route.name === "wall"
-          ? route.lib
-          : route.name;
+  // 换页回到顶部；搜索时改词不动。卡片库的三栏界面各栏自己滚动，页面本身不滚。
+  const place = route.name === "chapter" ? route.id : route.name;
+  // 三栏界面占满视口，不放页脚；署名和更新日期只在搜索页和接入 AI 页底部。
+  const fill = route.name === "browse";
+  const foot = route.name === "search" || route.name === "mcp";
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [place]);
@@ -133,10 +123,10 @@ function App() {
         跳到正文
       </button>
       <Header route={route} core={core} />
-      <main id="main" className="in page" tabIndex={-1}>
+      <main id="main" className={`in page${fill ? " fill" : ""}`} tabIndex={-1}>
         {core ? <Page route={route} core={core} /> : <Status error={error} />}
       </main>
-      <footer className="in foot">猫叔{core?.updated ? ` · 更新于 ${core.updated}` : ""}</footer>
+      {foot && <footer className="in foot">猫叔{core?.updated ? ` · 更新于 ${core.updated}` : ""}</footer>}
     </>
   );
 }

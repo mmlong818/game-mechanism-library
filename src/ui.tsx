@@ -39,25 +39,13 @@ export function Tags({ tags }: { tags: string[] }) {
   );
 }
 
-// 面包屑：库名 / 分组名。库名链接回该库的封面墙页。
-export function Crumbs({ lib, group, core, linkGroup = false }: { lib: string; group: string; core: Core; linkGroup?: boolean }) {
-  const groupName = core.groupName(lib, group);
-  return (
-    <nav className="crumbs" aria-label="所在位置">
-      <a href={href.wall(lib)}>{libName(lib)}</a>
-      <span aria-hidden="true"> / </span>
-      {linkGroup ? <a href={href.group(lib, group)}>{groupName}</a> : <span>{groupName}</span>}
-    </nav>
-  );
-}
-
-// 卡片列表：名称加开头那句话，文字为主。每张卡只有名称这一个链接。
+// 搜索结果列表：名称加开头那句话。卡片进三栏界面，书的章节进阅读页。
 export function EntryList({ items, core, where = false }: { items: Shell[]; core: Core; where?: boolean }) {
   return (
     <ul className="elist">
       {items.map((e) => (
         <li key={e.id}>
-          <a href={href.entry(e.id)}>
+          <a href={href.shell(e)}>
             <b>{e.name}</b>
           </a>
           <Tags tags={e.tags} />
