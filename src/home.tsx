@@ -148,7 +148,7 @@ export function Home({ core }: { core: Core }) {
             <img className="px" src={cover("section-new")} alt="" width={512} height={512} loading="lazy" />
             <div className="n num">{rareCount ?? "…"}</div>
             <h2>种{RARE}</h2>
-            <p>市面上很少见到的规则，以及还没有游戏用过的原创设想。想找没见过的点子，从这里翻。</p>
+            <p>市面上很少见到的规则，以及原创的规则设想。想找没见过的点子，从这里翻。</p>
             <a className="btn" href={href.rare}>
               看全部{RARE} →
             </a>

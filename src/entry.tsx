@@ -262,7 +262,7 @@ function buildRows(card: Card, all: All): Row[] {
       strRow("society", "人群与制度");
       strRow("daily_life", "日常生活");
       strRow("tensions", "内在的矛盾");
-      strRow("unknowns", "留给玩家猜的");
+      strRow("unknowns", "留给你来定的");
       strRow("read_by_player", "玩家怎样看出来");
       add("player_seat", "玩家是谁", S(b.player_seat), () => <p>{S(b.player_seat)}</p>);
       mechRow();
@@ -387,7 +387,7 @@ export function EntryPage({ core, lib, id }: { core: Core; lib: LibId; id: strin
             <div className="meta">
               <span className="tag">{meta.name}</span>
               <Tags tags={shell.tags} />
-              {origin === "写卡时提出" && <span className="origin">原创设想，还没有见到游戏这样做</span>}
+              {origin === "写卡时提出" && <span className="origin">原创设想</span>}
             </div>
             <h1>{shell.name}</h1>
             <dl className="lead">

@@ -43,7 +43,7 @@ export function CollectionPage({ core, lib, tag: rawTag }: { core: Core; lib: Li
             options={MECH_FILTERS.map((f) => ({ ...f, count: tagCount(f.value) }))}
           />
           <p className="hint">
-            具体机制是一条可以直接照做的规则；机制家族是同一思路下的一组做法；设计模式由几条机制组合而成。{RARE}是市面上很少见到的规则，或者还没有游戏用过的原创设想。
+            具体机制是一条可以直接照做的规则；机制家族是同一思路下的一组做法；设计模式由几条机制组合而成。{RARE}是市面上很少见到的规则，或者原创的规则设想。
           </p>
         </>
       )}
@@ -154,8 +154,8 @@ export function NewPage({ core }: { core: Core }) {
         img={cover("section-new")}
         lead={
           index
-            ? `${fresh.length} 张机制卡片，分在 ${sections.length} 个主题里。有的是市面上很少见到的规则，只在个别游戏里出现过；有的是还没有游戏用过的原创设想。想找没见过的点子，从这里翻。`
-            : "市面上很少见到的规则，以及还没有游戏用过的原创设想。"
+            ? `${fresh.length} 张机制卡片，分在 ${sections.length} 个主题里。有的是市面上很少见到的规则，只在个别游戏里出现过；有的是原创的规则设想。想找没见过的点子，从这里翻。`
+            : "市面上很少见到的规则，以及原创的规则设想。"
         }
       />
       {!index && <Status error={error} />}
