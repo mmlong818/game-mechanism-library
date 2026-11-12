@@ -2,7 +2,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { LIBS, loadGroupCards, useAll, useAsync, type All, type Card, type LibId, type Shell } from "./data";
 import { href } from "./router";
-import { Status, Tags } from "./ui";
+import { Status } from "./ui";
 
 type Obj = Record<string, unknown>;
 const S = (v: unknown): string => (typeof v === "string" ? v.trim() : typeof v === "number" ? String(v) : "");
@@ -361,7 +361,6 @@ export function CardPane({ lib, shell }: { lib: LibId; shell: Shell }) {
   return (
     <article className="card" ref={box}>
       <header className="card-head">
-        <Tags tags={shell.tags} />
         <h1>{shell.name}</h1>
         <dl className="lead">
           <div>

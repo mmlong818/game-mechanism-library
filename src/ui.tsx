@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { LEVELS, libName, type Core, type Shell } from "./data";
+import { libName, type Core, type Shell } from "./data";
 import { href } from "./router";
 
 export function useTitle(title: string) {
@@ -24,21 +24,6 @@ export function Status({ error }: { error?: Error }) {
   );
 }
 
-// 只显示机制库的层级标签；发布包里的其他标签（new、thin）网站不区分。
-export function Tags({ tags }: { tags: string[] }) {
-  const shown = tags.filter((t) => LEVELS.includes(t));
-  if (!shown.length) return null;
-  return (
-    <span className="tags">
-      {shown.map((t) => (
-        <span key={t} className="tag">
-          {t}
-        </span>
-      ))}
-    </span>
-  );
-}
-
 // 搜索结果列表：名称加开头那句话。卡片进三栏界面，书的章节进阅读页。
 export function EntryList({ items, core, where = false }: { items: Shell[]; core: Core; where?: boolean }) {
   return (
@@ -48,7 +33,6 @@ export function EntryList({ items, core, where = false }: { items: Shell[]; core
           <a href={href.shell(e)}>
             <b>{e.name}</b>
           </a>
-          <Tags tags={e.tags} />
           {where && (
             <span className="where">
               {libName(e.collection)} · {core.groupName(e.collection, e.group)}

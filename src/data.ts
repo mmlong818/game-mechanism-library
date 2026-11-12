@@ -27,8 +27,6 @@ export const BOOK = "book";
 export const BOOK_NAME = "书";
 export const libName = (id: string) => (id === BOOK ? BOOK_NAME : (LIBS.find((l) => l.id === id)?.name ?? id));
 
-export const LEVELS = ["具体机制", "机制家族", "设计模式"];
-
 export type Core = {
   release: string;
   updated: string;
