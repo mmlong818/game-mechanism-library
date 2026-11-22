@@ -197,6 +197,23 @@ function buildRows(card: Card, all: All): Row[] {
         ))}
       </ul>
     ));
+    // 设计示例：我们自拟的假想游戏（不是真实游戏），把这条机制落成具体规则并算一局的账。
+    const designs = OL(b.designs);
+    add("designs", "设计示例", designs.length, () => (
+      <div className="examples">
+        {designs.map((d, i) => (
+          <section key={i} className="example">
+            <Pairs
+              items={[
+                ["设定", S(d.premise)],
+                ["规则", S(d.rule)],
+                ["一局里", S(d.play)],
+              ]}
+            />
+          </section>
+        ))}
+      </div>
+    ));
     const ex = OL(b.examples);
     add("examples", "哪些游戏这样做", ex.length, () => examples(ex));
     const pit = OL(b.pitfalls);

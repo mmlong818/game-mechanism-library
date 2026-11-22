@@ -1,6 +1,6 @@
 // 冒烟测试：用官方 SDK 的客户端通过 stdio 启动服务，把六个工具各走一遍。
 // 用法：node scripts/smoke.mjs [发布包目录]   （先 npm run build）
-// 注意：这里的断言是照发布包 2026-11-23.1 的内容写的（条数、具体的卡片 id）。换了更新的发布包后，
+// 注意：这里的断言是照发布包 2026-11-24.1 的内容写的（条数、具体的卡片 id）。换了更新的发布包后，
 // 个别断言可能因内容变化而不过，不代表服务有问题；与内容无关的检查请用 smoke-http.mjs。
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

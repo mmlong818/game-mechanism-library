@@ -79,7 +79,7 @@ export function createServer(library: Library): McpServer {
         query: z.string().min(1).describe('关键词；多个词用空格分开，要全部命中'),
         collection: z.string().optional().describe('只搜这个库，如 mechanism、world、experience'),
         group: z.string().optional().describe('只搜这个分组（分组 id，如 deckbuilding）'),
-        tag: z.string().optional().describe('只要带这个标签的条目，如 new、thin、具体机制、机制家族、设计模式'),
+        tag: z.string().optional().describe('只要带这个标签的条目，如 new、具体机制、机制家族、设计模式'),
         limit: z.number().int().min(1).max(SEARCH_MAX_LIMIT).optional().describe(`返回条数，默认 ${SEARCH_DEFAULT_LIMIT}，上限 ${SEARCH_MAX_LIMIT}`),
         offset: z.number().int().min(0).optional().describe('跳过前面多少条，用于翻页，默认 0'),
       },
