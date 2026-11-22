@@ -1,17 +1,18 @@
 import { StrictMode, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import "./globals.css";
+import { ArticlePage, ArticlesPage } from "./articles";
 import { BookPage, ChapterPage } from "./book";
 import { useConfig } from "./config";
-import { BOOK_NAME, LIBS, useCore, type Core } from "./data";
+import { ARTICLE_NAME, BOOK_NAME, LIBS, useCore, type Core } from "./data";
 import { BrowsePage, EntryRedirect } from "./browse";
 import { LicensePage, McpPage } from "./info";
 import { SearchPage } from "./lists";
 import { goHome, href, replaceHash, useRoute, type Route } from "./router";
 import { Status } from "./ui";
 
-// 导航：站名、三个卡片库、书、接入 AI、搜索框。当前所在的库高亮。
-// 库里只有一本书时，书这一项直接显示书名；有多本时显示“书”，进书单。
+// 导航：站名、三个卡片库、书、专题文章、接入 AI、搜索框。当前所在的库高亮。
+// 库里只有一本书时，书这一项直接显示书名；有多本时显示“书”，进书单。发布包里没有专题文章时不显示那一项。
 function Header({ route, core }: { route: Route; core?: Core }) {
   const input = useRef<HTMLInputElement>(null);
   // 仓库地址来自 site-config.json；还没读到配置时先不显示，读到后留空也不显示。
@@ -27,6 +28,7 @@ function Header({ route, core }: { route: Route; core?: Core }) {
   }, [searchQ]);
   const routeLib = route.name === "browse" || route.name === "entry" ? route.lib : "";
   const current = (on: boolean) => (on ? ("page" as const) : undefined);
+  const hint = core && core.series.length > 0 ? "搜卡片、书和文章" : "搜卡片和书";
   const type = (value: string) => {
     const target = href.search(value, searchC);
     if (searchQ !== null) replaceHash(target);
@@ -66,6 +68,11 @@ function Header({ route, core }: { route: Route; core?: Core }) {
             {core.books.length === 1 ? core.books[0].name : BOOK_NAME}
           </a>
         )}
+        {core && core.series.length > 0 && (
+          <a href={href.articles()} aria-current={current(route.name === "articles" || route.name === "article")}>
+            {ARTICLE_NAME}
+          </a>
+        )}
         <a href={href.mcp} aria-current={current(route.name === "mcp")}>
           接入 AI
         </a>
@@ -78,7 +85,7 @@ function Header({ route, core }: { route: Route; core?: Core }) {
           location.hash = href.search(input.current?.value ?? "", searchC);
         }}
       >
-        <input ref={input} type="search" placeholder="搜卡片和书" aria-label="搜索卡片和书" onChange={(e) => type(e.target.value)} />
+        <input ref={input} type="search" placeholder={hint} aria-label={hint.replace(/^搜/, "搜索")} onChange={(e) => type(e.target.value)} />
       </form>
       <span className="lic">
         <a href={href.license} aria-current={current(route.name === "license")}>
@@ -105,6 +112,10 @@ function Page({ route, core }: { route: Route; core: Core }) {
       return <BookPage core={core} slug={route.slug} />;
     case "chapter":
       return <ChapterPage core={core} id={route.id} />;
+    case "articles":
+      return <ArticlesPage core={core} series={route.series} canonical={route.canonical} />;
+    case "article":
+      return <ArticlePage core={core} id={route.id} />;
     case "search":
       return <SearchPage core={core} q={route.q} c={route.c} />;
     case "mcp":
@@ -124,7 +135,8 @@ function App() {
     if (route.name === "unknown") goHome();
   }, [route.name]);
   // 换页回到顶部；搜索时改词不动。卡片库的三栏界面各栏自己滚动，页面本身不滚。
-  const place = route.name === "chapter" ? route.id : route.name;
+  const place = route.name === "chapter" || route.name === "article" ? route.id : route.name;
+  const reading = route.name === "chapter" || route.name === "article";
   // 三栏界面占满视口，不放页脚；署名和更新日期只在搜索页、接入 AI 页和版权页底部。
   const fill = route.name === "browse";
   const foot = route.name === "search" || route.name === "mcp" || route.name === "license";
@@ -138,7 +150,7 @@ function App() {
         跳到正文
       </button>
       <Header route={route} core={core} />
-      <main id="main" className={route.name === "chapter" ? "bookpage" : `in page${fill ? " fill" : ""}`} tabIndex={-1}>
+      <main id="main" className={reading ? "bookpage" : `in page${fill ? " fill" : ""}`} tabIndex={-1}>
         {core ? <Page route={route} core={core} /> : <Status error={error} />}
       </main>
       {foot && <footer className="in foot">猫叔{core?.updated ? ` · 更新于 ${core.updated}` : ""}</footer>}

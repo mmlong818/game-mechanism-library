@@ -3,17 +3,12 @@
 // 导航“书”（#/c/book）在库里只有一本书时直接打开这本书的第一篇（有前言就是前言）；有多本时才是书单。
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Marked, type Tokens } from "marked";
-import { BOOK, BOOK_NAME, loadChapters, loadGroupCards, useAsync, type Core, type Group, type Shell, type Volume } from "./data";
+import { ARTICLE, BOOK, BOOK_NAME, LIBS, loadChapters, loadGroupCards, partOf, useAsync, type Core, type Group, type Shell, type Volume } from "./data";
 import { goHome, href, replaceHash } from "./router";
 import { Status, useTitle } from "./ui";
 import "./book.css";
 
 const isAppendix = (e: Shell) => e.tags.some((t) => /^part:\D/.test(t));
-// 章的序号（tags 里的 part:<数字>）；附录等不是数字的返回 NaN。
-const partOf = (e: Shell) => {
-  const t = e.tags.find((x) => /^part:\d+$/.test(x));
-  return t ? Number(t.slice(5)) : NaN;
-};
 
 function BookList({ books }: { books: Group[] }) {
   useTitle(BOOK_NAME);
@@ -57,10 +52,18 @@ export function BookPage({ core, slug }: { core: Core; slug: string }) {
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 const safeUrl = (u: string) => /^(https?:|mailto:)/i.test(u.trim());
+// 正文里指向条目的链接，地址就是全局 id（如 mechanism/extraction-settles-run-gains、book/rpg-seven-volumes-06、
+// article/loops-01-what-makes-a-loop）。换成站内地址：书的章节和文章是正式地址；卡片用 #/e/<库>/<id>，
+// 打开时由 EntryRedirect 换成这张卡的三栏地址，这样渲染正文时不用先取卡片数据。
+const ENTRY_LIBS = new Set<string>([...LIBS.map((l) => l.id), BOOK, ARTICLE]);
+function entryHref(to: string): string | null {
+  const m = /^([a-z]+)\/([A-Za-z0-9_-]+)$/.exec(to.trim());
+  return m && ENTRY_LIBS.has(m[1]) ? href.entry(`${m[1]}/${m[2]}`) : null;
+}
 
-// 把一章的 markdown 转成 HTML。正文里的 HTML 一律当普通文字显示，不会被执行；
-// 链接只留 http、https 和 mailto，其余只显示文字；图片只留 http、https。
-function render(source: string): string {
+// 把一章或一篇文章的 markdown 转成 HTML。正文里的 HTML 一律当普通文字显示，不会被执行；
+// 指向条目的链接换成站内地址，外部链接只留 http、https 和 mailto，其余只显示文字；图片只留 http、https。
+export function render(source: string): string {
   const md = new Marked({
     gfm: true,
     renderer: {
@@ -69,6 +72,8 @@ function render(source: string): string {
       },
       link({ href: to, tokens }: Tokens.Link) {
         const inner = this.parser.parseInline(tokens);
+        const inside = entryHref(to);
+        if (inside) return `<a href="${esc(inside)}">${inner}</a>`;
         return safeUrl(to) ? `<a href="${esc(to)}" target="_blank" rel="noopener noreferrer">${inner}</a>` : inner;
       },
       image({ href: src, text }: Tokens.Image) {
@@ -97,7 +102,7 @@ const inVolume = (e: Shell, v: Volume) => partOf(e) >= v.parts[0] && partOf(e) <
 
 // 书页用的衬线和无衬线字体只在进了书页才加载，别的页面不受影响。
 const FONT_ID = "bk-fonts";
-function useBookFonts() {
+export function useBookFonts() {
   useEffect(() => {
     if (document.getElementById(FONT_ID)) return;
     const link = document.createElement("link");

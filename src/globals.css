@@ -333,6 +333,53 @@ pre {
   font-variant-numeric: tabular-nums;
 }
 
+/* 专题文章的入口页：每个系列一块，系列名、一句说明、各篇标题。宽屏排成多列，窄屏一列 */
+.series {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  gap: 0 44px;
+}
+.series section {
+  padding: 18px 0 26px;
+  border-top: 1px solid var(--edge);
+  min-width: 0;
+}
+.series h2 {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+.series section > p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.series ol {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.series ol a {
+  display: flex;
+  gap: 8px;
+  padding: 5px 0;
+  line-height: 1.5;
+}
+.series ol i {
+  flex: none;
+  width: 1.5em;
+  padding-top: 1px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.series ol b {
+  font-weight: 500;
+}
+.series ol a:hover b {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* 条目列表 */
 .elist {
   margin-top: 16px;

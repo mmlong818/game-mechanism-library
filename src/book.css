@@ -534,6 +534,48 @@
   }
 }
 
+/* ================= 专题文章的阅读页 =================
+   与书的章节页同一套版式，多两样：标题下的摘要；宽屏时正文右边的“本篇小节”（沿用 globals.css 的 .toc）。 */
+.ar-summary {
+  font-family: var(--bk-sans);
+  font-size: 15.5px;
+  line-height: 1.95;
+  color: var(--bk-ink-soft);
+  margin: -6px 0 34px;
+}
+.bk-md h2 {
+  scroll-margin-top: calc(var(--top) + 16px);
+}
+.ar-toc {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .ar-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 200px;
+    column-gap: 28px;
+    align-items: start;
+  }
+  .ar-content .ar-toc {
+    display: flex;
+    margin-top: 44px;
+    font-family: var(--bk-sans);
+  }
+  .bk .toc button {
+    color: var(--bk-ink-soft);
+    border-left-color: var(--bk-line);
+    line-height: 1.5;
+    padding-block: 5px;
+  }
+  .bk .toc button:hover {
+    color: var(--bk-accent);
+    border-left-color: var(--bk-accent);
+  }
+  .bk .toc div {
+    color: var(--bk-ink-faint);
+  }
+}
+
 /* 站点的标题默认用无衬线；书页的书名、卷名、章名用衬线 */
 .bk-hero h1,
 .bk-ch .ch-title {

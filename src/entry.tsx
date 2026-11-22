@@ -1,6 +1,6 @@
 // 卡片全文（三栏界面的右栏）。三类卡各一种版式；body 里不认识的字段忽略，缺字段的栏目不显示。
 import { useEffect, useRef, type ReactNode } from "react";
-import { LIBS, loadGroupCards, useAll, useAsync, type All, type Card, type LibId, type Shell } from "./data";
+import { ARTICLE, LIBS, loadArticles, loadGroupCards, partOf, useAll, useAsync, useCore, type All, type Card, type LibId, type Shell } from "./data";
 import { href } from "./router";
 import { Status } from "./ui";
 
@@ -353,6 +353,10 @@ export function CardPane({ lib, shell }: { lib: LibId; shell: Shell }) {
   useEffect(() => {
     box.current?.parentElement?.scrollTo(0, 0);
   }, [shell.id]);
+  // 讲到这张卡的专题文章：取自文章库的 index（外壳 links 里 to 等于这张卡），单独加载，不耽误上面各栏。
+  const { data: articles } = useAsync(loadArticles, []);
+  const core = useCore().data;
+  const citing = articles?.filter((a) => a.links?.some((l) => l.to === shell.id)) ?? [];
   const card = cards?.find((c) => c.id === shell.id);
   const rows = card && all ? buildRows(card, all) : [];
   const boundary = card ? S(card.body.boundary) : "";
@@ -384,6 +388,26 @@ export function CardPane({ lib, shell }: { lib: LibId; shell: Shell }) {
         ))
       ) : (
         <Status error={failed} />
+      )}
+      {rows.length > 0 && citing.length > 0 && (
+        <section className="row">
+          <h2 className="label">讲到它的文章</h2>
+          <div className="body">
+            <ul className="named">
+              {citing.map((a) => (
+                <li key={a.id}>
+                  <a className="ref" href={href.entry(a.id)}>
+                    {a.name}
+                  </a>
+                  <span>
+                    {core?.groupName(ARTICLE, a.group) ?? ""}
+                    {partOf(a) ? ` · 第 ${partOf(a)} 篇` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
       )}
     </article>
   );

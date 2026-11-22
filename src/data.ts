@@ -15,7 +15,8 @@ export type Shell = {
 export type Card = Shell & { body: Record<string, unknown> };
 // 书的分卷：parts 是这一卷的起止章序号（含两端）。
 export type Volume = { title: string; parts: [number, number] };
-export type Group = { id: string; name: string; count: number; description?: string; author?: string; volumes?: Volume[] };
+// order 只有专题文章的系列有：系列的排列顺序，从 1 起。
+export type Group = { id: string; name: string; count: number; description?: string; author?: string; volumes?: Volume[]; order?: number };
 export type LibId = "mechanism" | "world" | "experience";
 
 export const LIBS: { id: LibId; name: string; intro: string }[] = [
@@ -27,7 +28,16 @@ export const isLib = (v: string): v is LibId => LIBS.some((l) => l.id === v);
 // 书是另一种库（kind 为 articles）：分组是一本书，条目是一章，正文是 markdown。
 export const BOOK = "book";
 export const BOOK_NAME = "书";
-export const libName = (id: string) => (id === BOOK ? BOOK_NAME : (LIBS.find((l) => l.id === id)?.name ?? id));
+// 专题文章也是 kind 为 articles 的库：分组是一个系列，条目是一篇，正文是 markdown。发布包里没有这个库时网站不显示它。
+export const ARTICLE = "article";
+export const ARTICLE_NAME = "专题文章";
+export const libName = (id: string) =>
+  id === BOOK ? BOOK_NAME : id === ARTICLE ? ARTICLE_NAME : (LIBS.find((l) => l.id === id)?.name ?? id);
+// 文章、章节在系列或书里的序号（tags 里的 part:<数字>）；没有或不是数字的返回 NaN。
+export const partOf = (e: Shell) => {
+  const t = e.tags.find((x) => /^part:\d+$/.test(x));
+  return t ? Number(t.slice(5)) : NaN;
+};
 
 export type Core = {
   release: string;
@@ -36,6 +46,8 @@ export type Core = {
   counts: Record<LibId, number>;
   groups: Record<LibId, Group[]>;
   books: Group[];
+  // 专题文章的系列，按 order 排好；发布包里没有文章库时为空。
+  series: Group[];
   groupName: (lib: string, group: string) => string;
 };
 export type Backlink = { from: string; rel: string };
@@ -88,11 +100,16 @@ export function loadCore(): Promise<Core> {
       groups[l.id] = groupLists[i];
       counts[l.id] = manifest.collections.find((c) => c.id === l.id)?.count ?? 0;
     });
-    const books = manifest.collections.some((c) => c.id === BOOK && c.kind === "articles")
-      ? await getJson<Group[]>(`${root}/collections/${BOOK}/groups.json`)
-      : [];
+    const has = (id: string) => manifest.collections.some((c) => c.id === id && c.kind === "articles");
+    const [books, rawSeries] = await Promise.all([
+      has(BOOK) ? getJson<Group[]>(`${root}/collections/${BOOK}/groups.json`) : [],
+      has(ARTICLE) ? getJson<Group[]>(`${root}/collections/${ARTICLE}/groups.json`) : [],
+    ]);
+    const rank = (g: Group) => (typeof g.order === "number" ? g.order : Infinity);
+    const series = rawSeries.filter((g) => g && g.count > 0).sort((a, b) => rank(a) - rank(b));
     const names = new Map<string, string>();
     for (const b of books) names.set(`${BOOK}/${b.id}`, b.name);
+    for (const s of series) names.set(`${ARTICLE}/${s.id}`, s.name);
     for (const l of present) for (const g of groups[l.id]) names.set(`${l.id}/${g.id}`, g.name);
     const d = /^(\d{4})-(\d{2})-(\d{2})/.exec(release);
     return {
@@ -102,6 +119,7 @@ export function loadCore(): Promise<Core> {
       counts,
       groups,
       books,
+      series,
       groupName: (lib, group) => names.get(`${lib}/${group}`) ?? group,
     };
   })();
@@ -122,6 +140,13 @@ export async function loadChapters(): Promise<Shell[]> {
   const core = await loadCore();
   if (!core.books.length) return [];
   return getJson<Shell[]>(`${await colPath(BOOK)}/index.json`);
+}
+
+// 专题文章的全部外壳，按系列内序号排列。卡片页的“讲到它的文章”和搜索各自按需加载，不进 loadAll，不拖慢卡片页。
+export async function loadArticles(): Promise<Shell[]> {
+  const core = await loadCore();
+  if (!core.series.length) return [];
+  return getJson<Shell[]>(`${await colPath(ARTICLE)}/index.json`);
 }
 
 let allPromise: Promise<All> | undefined;
