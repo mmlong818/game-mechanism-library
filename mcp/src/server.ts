@@ -61,7 +61,7 @@ export function createServer(library: Library): McpServer {
     'list_collections',
     {
       title: '列出各库与分组',
-      description: '列出资料库里有哪些库（机制、世界观、体验等）、各多少条、各自的分组（分组 id、中文名、条数）。',
+      description: '列出资料库里有哪些库（机制、世界观、体验、书、专题文章等）、各多少条、各自的分组（分组 id、中文名、条数）。',
       annotations: READ_ONLY,
     },
     () => run(() => library.listCollections()),

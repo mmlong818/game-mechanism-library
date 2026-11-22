@@ -1,6 +1,6 @@
 // 冒烟测试：用官方 SDK 的客户端通过 stdio 启动服务，把六个工具各走一遍。
 // 用法：node scripts/smoke.mjs [发布包目录]   （先 npm run build）
-// 注意：这里的断言是照发布包 2026-11-13.2 的内容写的（条数、具体的卡片 id）。换了更新的发布包后，
+// 注意：这里的断言是照发布包 2026-11-23.1 的内容写的（条数、具体的卡片 id）。换了更新的发布包后，
 // 个别断言可能因内容变化而不过，不代表服务有问题；与内容无关的检查请用 smoke-http.mjs。
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +11,7 @@ import { defaultReleaseDir } from './release-dir.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const releaseDir = path.resolve(process.argv[2] ?? defaultReleaseDir());
 const EXPECTED_TOOLS = ['get_entry', 'get_library_info', 'get_links', 'list_collections', 'list_group', 'search'];
-const EXPECTED_COUNTS = { mechanism: 1384, world: 132, experience: 148, book: 36 };
+const EXPECTED_COUNTS = { mechanism: 1487, world: 240, experience: 254, book: 36, article: 46 };
 
 let failed = 0;
 async function step(name, fn) {
@@ -53,7 +53,7 @@ await step('列出工具（正好六个，都标了只读）', async () => {
   return names.join(', ');
 });
 
-await step('get_library_info（条数 1384 / 132 / 148，书 36 篇；带授权说明）', async () => {
+await step('get_library_info（条数 1487 / 240 / 254，书 36 篇，专题文章 46 篇；带授权说明）', async () => {
   const info = await call('get_library_info');
   assert(info.release === path.basename(releaseDir), `发布编号 ${info.release}`);
   assert(info.name === '猫叔的游戏知识库' && info.homepage.startsWith('https://github.com/'), `名称或主页不对：${info.name} ${info.homepage}`);
@@ -66,9 +66,9 @@ await step('get_library_info（条数 1384 / 132 / 148，书 36 篇；带授权�
   return `${info.release}，约定 ${info.contract_version}，授权 ${info.license.content}`;
 });
 
-await step('list_collections（三个卡片库加书，各带分组）', async () => {
+await step('list_collections（三个卡片库加书和专题文章，各带分组）', async () => {
   const { collections } = await call('list_collections');
-  assert(collections.length === 4, `库的数量 ${collections.length}`);
+  assert(collections.length === 5, `库的数量 ${collections.length}`);
   for (const c of collections) {
     assert(c.groups.length > 0, `${c.id} 没有分组`);
     const sum = c.groups.reduce((a, g) => a + g.count, 0);
@@ -97,7 +97,7 @@ await step('search 带 collection: "world"', async () => {
 await step('search 多个词、大小写、tag、翻页、上限', async () => {
   const both = await call('search', { query: '牌组  移除' });
   assert(both.results.some((e) => e.id === 'mechanism/remove-cards-to-thin-deck'), '多词搜索没找到删牌');
-  const upper = await call('search', { query: 'DECKBUILDING', limit: 50 });
+  const upper = await call('search', { query: 'DECKBUILDING', collection: 'mechanism', limit: 50 });
   assert(upper.total === 45 && upper.results.length === 45, `按分组 id 大写搜索应得 45，实际 ${upper.total}`);
   const tagged = await call('search', { query: '牌', tag: '设计模式' });
   assert(tagged.total > 0 && tagged.results.every((e) => e.tags.includes('设计模式')), 'tag 过滤不对');
@@ -142,7 +142,7 @@ await step('list_group mechanism / deckbuilding', async () => {
   assert(r.total === 45 && r.entries.length === 45, `应为 45 条，实际 total ${r.total}、返回 ${r.entries.length}`);
   assert(r.entries.every((e) => e.group === 'deckbuilding' && !('body' in e)), '条目不对');
   const big = await call('list_group', { collection: 'mechanism', group: 'combat' });
-  assert(big.total === 196 && big.entries.length === 60 && big.next_offset === 60, '大分组的分页不对');
+  assert(big.total === 208 && big.entries.length === 60 && big.next_offset === 60, '大分组的分页不对');
   return `${r.group.name} ${r.total} 条；combat 196 条分页正常`;
 });
 
