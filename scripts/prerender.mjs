@@ -28,7 +28,9 @@ const dist = path.join(root, "dist");
 const json = async (p) => JSON.parse(await readFile(path.join(root, p), "utf8"));
 
 const SITE = "猫叔的游戏知识库";
-const SITE_DESC = "给游戏设计者查的卡片库：一条规则怎么运转、一个世界靠什么前提成立、玩家在某一刻感受到什么，每张开头用一句话说清。";
+const TAGLINE = "最全的游戏知识库";
+// 首页和找不到摘要时用的说明。条数在读完发布包后填进去（见下面的 siteDesc）。
+let SITE_DESC = "";
 const LIB_DESC = {
   mechanism: "一条规则怎么运转：玩家做什么、受什么限制、局面怎么变，设计者能调什么，容易做坏在哪里。每张附一个带数值的设计示例。",
   world: "一个世界靠什么前提成立：规律和它的后果、空间、历史、人群、日常，以及适合搭配的机制。",
@@ -64,6 +66,8 @@ for (const col of manifest.collections.filter((c) => c.kind === "cards" || c.kin
   if (lib.groups.every((g) => typeof g.order === "number")) lib.groups.sort((a, b) => a.order - b.order);
   libs.push(lib);
 }
+const countOf = (id) => libs.find((l) => l.id === id)?.count ?? 0;
+SITE_DESC = `${TAGLINE}，给游戏设计者查阅：${countOf("mechanism")} 张机制卡、${countOf("world")} 张世界观卡、${countOf("experience")} 张体验卡、${countOf("article")} 篇专题文章和一本《RPG设计七卷书》，讲清一条规则怎么运转、一个世界靠什么成立、玩家在某一刻感受到什么。`;
 const back = new Map();
 for (const c of byId.values()) for (const l of c.links ?? []) {
   if (!byId.has(l.to)) continue;
@@ -170,6 +174,23 @@ function articleBody(card) {
 const template = await readFile(path.join(dist, "index.html"), "utf8");
 const STYLE = `<style>.static{max-width:46rem;margin:0 auto;padding:1.5rem 1rem 4rem;line-height:1.75}.static nav{font-size:.9em;margin-bottom:1rem}.static h1{line-height:1.3}.static dt{font-weight:700;margin-top:.6em}.static dd{margin:0}</style>`;
 
+// 结构化数据（schema.org）：让搜索引擎知道这一页是哪个网站的哪一篇、谁写的、按什么授权。
+const ldSite = { "@type": "WebSite", "@id": `${siteUrl}#site`, name: SITE, alternateName: TAGLINE, url: siteUrl, inLanguage: "zh-CN" };
+const ldAuthor = { "@type": "Person", name: manifest.license?.attribution || "猫叔" };
+const day = /^\d{4}-\d{2}-\d{2}/.exec(release)?.[0];
+function jsonLd({ title, desc, canonical, crumbs, type }) {
+  const items = [];
+  if (type === "article") {
+    items.push({ "@type": "Article", headline: title.split(" · ")[0], description: desc, url: canonical, mainEntityOfPage: canonical, inLanguage: "zh-CN", author: ldAuthor, publisher: ldAuthor, isPartOf: ldSite, license: manifest.license?.content_url, ...(day ? { dateModified: day } : {}) });
+  } else {
+    items.push({ ...ldSite, description: desc, author: ldAuthor, license: manifest.license?.content_url });
+    if (canonical !== siteUrl) items.push({ "@type": "CollectionPage", name: title.split(" · ")[0], description: desc, url: canonical, inLanguage: "zh-CN", isPartOf: { "@id": `${siteUrl}#site` } });
+  }
+  const trail = (crumbs ?? []).filter(([, h]) => h);
+  if (trail.length) items.push({ "@type": "BreadcrumbList", itemListElement: trail.map(([t, h], i) => ({ "@type": "ListItem", position: i + 1, name: t, item: abs(h) })) });
+  return `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@graph": items }).replace(/</g, "\\u003c")}</script>`;
+}
+
 function page({ title, desc, canonical, route, crumbs, body, type = "article" }) {
   const head = [
     `<title>${esc(title)}</title>`,
@@ -179,6 +200,7 @@ function page({ title, desc, canonical, route, crumbs, body, type = "article" })
     `<meta property="og:title" content="${esc(title)}" />`,
     `<meta property="og:description" content="${esc(desc)}" />`,
     `<meta property="og:url" content="${esc(canonical)}" />`,
+    jsonLd({ title, desc, canonical, crumbs, type }),
     STYLE,
     // 浏览器里交给应用：先把地址换成对应的 hash 地址（应用的数据和资源都相对站点根目录取）。
     route ? `<script>history.replaceState(null,"",${JSON.stringify(basePath)}+(location.hash||${JSON.stringify(route)}));</script>` : "",
@@ -241,17 +263,59 @@ for (const lib of libs) {
 
 // 首页：保留应用原来的入口行为（不改写地址），只在空壳里填上说明和各库入口。
 await write("index.html", page({
-  title: SITE,
+  title: `${SITE} · ${TAGLINE}`,
   desc: SITE_DESC,
   canonical: siteUrl,
   route: "",
-  body: `<h1>${SITE}</h1>${p(SITE_DESC)}<ul>${libs.map((l) => `<li><a href="${basePath}${l.id}/">${esc(l.name)}（${l.count} 条）</a>：${esc(LIB_DESC[l.id] ?? "")}</li>`).join("")}</ul>${p(`内容版本 ${release}。${manifest.license?.notice ?? ""}`)}`,
+  body: `<h1>${SITE}：${TAGLINE}</h1>${p(SITE_DESC)}<p>给 AI 和爬虫的说明：<a href="${basePath}llms.txt">llms.txt</a>，全部地址：<a href="${basePath}sitemap.xml">sitemap.xml</a>。</p><ul>${libs.map((l) => `<li><a href="${basePath}${l.id}/">${esc(l.name)}（${l.count} 条）</a>：${esc(LIB_DESC[l.id] ?? "")}</li>`).join("")}</ul>${p(`内容版本 ${release}。${manifest.license?.notice ?? ""}`)}`,
   type: "website",
 }));
 urls.unshift(siteUrl);
 
-const day = /^\d{4}-\d{2}-\d{2}/.exec(release)?.[0];
 await write("sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `<url><loc>${esc(u)}</loc>${day ? `<lastmod>${day}</lastmod>` : ""}</url>`).join("\n")}\n</urlset>\n`);
 // 站点放在域名根目录时这份 robots.txt 才会被读到；放在子路径下时要在域名根目录的 robots.txt 里另写 Sitemap 一行。
-await write("robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${abs("sitemap.xml")}\n`);
+// 明确写出欢迎搜索引擎和各家 AI 的抓取器；data/ 下是同一份内容的 JSON，不必重复收录。
+const BOTS = ["Googlebot", "Bingbot", "Baiduspider", "Google-Extended", "GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-User", "PerplexityBot", "Applebot-Extended", "CCBot", "Bytespider"];
+const robots = [
+  `# ${SITE}：${TAGLINE}`,
+  `# 欢迎抓取和引用。内容授权 ${manifest.license?.content ?? ""}：可以原样引用并注明作者，不得商用，不得改编。`,
+  `# 给 AI 的站点说明见 ${abs("llms.txt")}`,
+  "",
+  "User-agent: *",
+  "Allow: /",
+  `Disallow: ${basePath}data/`,
+  "",
+  ...BOTS.flatMap((b) => [`User-agent: ${b}`, "Allow: /", ""]),
+  `Sitemap: ${abs("sitemap.xml")}`,
+  "",
+].join("\n");
+await write("robots.txt", robots);
+
+// llms.txt：给 AI 读取器的站点说明（https://llmstxt.org 的格式）。讲清这里有什么、每类页面的地址规则，
+// 列出各库的分组，以及全部文章和书的章节。卡片太多不逐张列，目录页和 sitemap.xml 里有全部地址。
+const md = (s) => String(s ?? "").replace(/\s+/g, " ").trim();
+const llms = [`# ${SITE}`, "", `> ${SITE_DESC}`, ""];
+llms.push(
+  `这是一个中文的游戏设计知识库，作者${ldAuthor.name}，内容版本 ${release}。每个条目有一个固定地址，正文直接写在网页的 HTML 里，不需要执行脚本就能读到。`,
+  "",
+  `- 条目地址的规则：\`${siteUrl}<库>/<条目 id>/\`，库是 ${libs.map((l) => `\`${l.id}\`（${l.name}）`).join("、")}。`,
+  `- 全部地址：[sitemap.xml](${abs("sitemap.xml")})，共 ${urls.length} 条。`,
+  `- 引用时请给出条目的地址并注明作者。授权 ${manifest.license?.content ?? ""}：${manifest.license?.notice ?? ""}`,
+  `- 需要成批读取或让 AI 工具直接检索时，可以接 MCP 服务，做法见 [仓库说明](https://github.com/mmlong818/game-mechanism-library#readme)。`,
+  "",
+);
+for (const lib of libs) {
+  llms.push(`## ${lib.name}（${lib.count} 条）`, "", LIB_DESC[lib.id] ?? "", "", `- [${lib.name}目录](${abs(`${lib.id}/`)})：按分组列出全部条目和每条的一句话摘要`);
+  if (lib.kind === "cards") {
+    llms.push(`- 分组：${lib.groups.map((g) => `${g.name}（${g.cards.length}）`).join("、")}`, "");
+  } else {
+    llms.push("");
+    for (const g of lib.groups) {
+      llms.push(`### ${g.name}`, "", ...(g.description ? [md(g.description), ""] : []));
+      for (const c of g.cards) llms.push(`- [${md(c.name)}](${abs(url(c.id))})：${md(c.summary)}`);
+      llms.push("");
+    }
+  }
+}
+await write("llms.txt", llms.join("\n"));
 console.log(`静态页 ${count} 个条目、${libs.length} 个目录页、首页；sitemap ${urls.length} 条地址`);
