@@ -181,7 +181,7 @@ node scripts/smoke-http.mjs --url https://mcp.example.com/mcp     # 直接测一
 
 不给发布包目录时，脚本会依次找环境变量 `GDL_RELEASE_DIR`、旁边的 `../site/data`（按 `current.json`）。
 
-`smoke.mjs` 里的断言是照发布包 2026-11-24.2 的内容写的（各库条数、具体的卡片 id）；换了更新的发布包后个别断言可能不过，不代表服务有问题。`smoke-http.mjs` 不依赖具体内容，任何发布包都能用。
+`smoke.mjs` 里的断言是照发布包 2026-11-24.3 的内容写的（各库条数、具体的卡片 id）；换了更新的发布包后个别断言可能不过，不代表服务有问题。`smoke-http.mjs` 不依赖具体内容，任何发布包都能用。
 
 ## 授权
 
