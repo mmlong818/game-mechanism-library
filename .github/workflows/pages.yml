@@ -29,6 +29,10 @@ jobs:
         run: npm run build
         env:
           VITE_BASE_PATH: /game-mechanism-library/
+      - name: Write static pages for search engines and readers without scripts
+        run: node scripts/prerender.mjs
+        env:
+          SITE_URL: https://mmlong818.github.io/game-mechanism-library/
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
