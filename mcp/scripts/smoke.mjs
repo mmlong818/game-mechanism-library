@@ -1,6 +1,6 @@
 // 冒烟测试：用官方 SDK 的客户端通过 stdio 启动服务，把六个工具各走一遍。
 // 用法：node scripts/smoke.mjs [发布包目录]   （先 npm run build）
-// 注意：这里的断言是照发布包 2026-11-24.3 的内容写的（条数、具体的卡片 id）。换了更新的发布包后，
+// 注意：这里的断言是照发布包 2026-11-25.1 的内容写的（条数、具体的卡片 id）。换了更新的发布包后，
 // 个别断言可能因内容变化而不过，不代表服务有问题；与内容无关的检查请用 smoke-http.mjs。
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +11,7 @@ import { defaultReleaseDir } from './release-dir.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const releaseDir = path.resolve(process.argv[2] ?? defaultReleaseDir());
 const EXPECTED_TOOLS = ['get_entry', 'get_library_info', 'get_links', 'list_collections', 'list_group', 'search'];
-const EXPECTED_COUNTS = { mechanism: 1487, world: 240, experience: 254, book: 36, article: 57 };
+const EXPECTED_COUNTS = { mechanism: 1487, world: 240, experience: 254, book: 36, article: 81 };
 
 let failed = 0;
 async function step(name, fn) {
@@ -53,7 +53,7 @@ await step('列出工具（正好六个，都标了只读）', async () => {
   return names.join(', ');
 });
 
-await step('get_library_info（条数 1487 / 240 / 254，书 36 篇，专题文章 57 篇；带授权说明）', async () => {
+await step('get_library_info（条数 1487 / 240 / 254，书 36 篇，专题文章 81 篇；带授权说明）', async () => {
   const info = await call('get_library_info');
   assert(info.release === path.basename(releaseDir), `发布编号 ${info.release}`);
   assert(info.name === '猫叔的游戏知识库' && info.homepage.startsWith('https://github.com/'), `名称或主页不对：${info.name} ${info.homepage}`);
